@@ -46,16 +46,16 @@ func TestUser_LoginErr(t *testing.T) {
 	require.Equal(t, domain.Token{}, token)
 }
 
-func TestUser_Login(t *testing.T) {
-	ctx := context.Background()
-	userService, userRepo := mockUserService(t)
+// func TestUser_Login(t *testing.T) {
+// 	ctx := context.Background()
+// 	userService, userRepo := mockUserService(t)
 
-	userRepo.EXPECT().GetByUsername(ctx, gomock.Any())
-	userRepo.EXPECT().CreateSession(ctx, gomock.Any(), gomock.Any())
-	userRepo.EXPECT().SetCacheUser(ctx, gomock.Any(), gomock.Any(), gomock.Any())
+// 	userRepo.EXPECT().GetByUsername(ctx, gomock.Any())
+// 	userRepo.EXPECT().CreateSession(ctx, gomock.Any(), gomock.Any())
+// 	userRepo.EXPECT().SetCacheUser(ctx, gomock.Any(), gomock.Any(), gomock.Any())
 
-	token, err := userService.Login(ctx, "test", "test12")
-	require.NoError(t, err)
-	require.IsType(t, domain.Token{}, token)
+// 	token, err := userService.Login(ctx, "test", "test12")
+// 	require.NoError(t, err)
+// 	require.IsType(t, domain.Token{}, token)
 
-}
+// }

@@ -280,7 +280,6 @@ func TestUser_UpdatePassword(t *testing.T) {
 			NewRepository(rdb, dbx, logging),
 			ErrNoRowsUpdated,
 		},
-		{},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {

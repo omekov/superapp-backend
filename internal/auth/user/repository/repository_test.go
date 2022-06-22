@@ -26,7 +26,7 @@ var (
 )
 
 const (
-	configPath = "../../../../configs/config.yaml"
+	configPath = "../../../../configs/example.config.yaml"
 )
 
 func TestMain(m *testing.M) {

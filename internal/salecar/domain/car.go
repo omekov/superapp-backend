@@ -15,10 +15,10 @@ type CarType struct {
 type CarMark struct {
 	ID        uint
 	Name      string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	CarTypeID uint
-	NameRus   string
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
+	CarTypeID uint      `db:"car_type_id"`
+	NameRus   string    `db:"name_rus"`
 	IsPopular bool
 }
 

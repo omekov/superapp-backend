@@ -11,7 +11,6 @@ import (
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
 	. "github.com/omekov/superapp-backend/internal/salecar/car/repository"
-	"github.com/omekov/superapp-backend/pkg/conn"
 	"github.com/omekov/superapp-backend/pkg/logger"
 	"github.com/pressly/goose/v3"
 	"github.com/testcontainers/testcontainers-go"
@@ -62,7 +61,7 @@ func TestMain(m *testing.M) {
 		log.Fatal(fmt.Errorf("pgContainer.MappedPort %s", err))
 	}
 
-	_, err = pgContainer.Host(ctx)
+	pgContainerHostIP, err := pgContainer.Host(ctx)
 	if err != nil {
 		log.Fatal(fmt.Errorf("pgContainer.Host %s", err))
 	}
@@ -70,14 +69,20 @@ func TestMain(m *testing.M) {
 	log.Println("TestContainer Postgres PORT:", pgContainerPort.Port())
 	logg := logger.NewAPILogger("debug")
 	logg.InitLogger()
-	connect := conn.New(logg)
-	dbx := connect.SQLXConn(
-		ctx,
-		"../../../../configs/config.yaml",
+	dsn := fmt.Sprintf(
+		"host=%s port=%s dbname=%s sslmode=%s user=%s password=%s",
+		pgContainerHostIP,
+		pgContainerPort.Port(),
+		postgresName,
+		"disable",
+		postgresUser,
+		postgresPass,
 	)
+	dbx, err = sqlx.ConnectContext(ctx, "pgx", dsn)
 	if err != nil {
-		log.Fatal(fmt.Errorf("postgresql.Connection %s", err))
+		log.Fatal(fmt.Errorf("sqlx.ConnectContext: %s", err))
 	}
+	defer dbx.Close()
 
 	err = goose.Up(dbx.DB, "../../../../migrations/salecar")
 	if err != nil {
