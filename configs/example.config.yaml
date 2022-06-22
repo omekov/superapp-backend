@@ -1,0 +1,31 @@
+postgres:
+  driver: "pgx"
+  host: "localhost"
+  username: "superapp_user"
+  password: "password"
+  databasename: "superapp_auth"
+  port: 3432
+  sslmode: "disable"
+  maxIdleCon: 10
+  maxOpenCon: 3
+  migratePath: "../../migrations/auth"
+redis:
+  host: "localhost:6379"
+  password: "superapp"
+jwt:
+  access: "access"
+  refresh: "refresh"
+  mail: "mail"
+grpc:
+  maxConnectionIdle: 5s
+  timeout: 5s
+  maxConnectionAge: 5s
+  time: 5s
+mail:
+  timeout: 5s
+  host: "mail.com"
+  port: 25
+  username: "admin"
+  password: "admin"
+  sender: "from@example.com"
+  templatePath: "templates/"
