@@ -6,7 +6,7 @@ run:
 	go run ./cmd/auth/*.go
 
 test:
-	go test ./... -v -cover
+	go test -v -cover -timeout 60s ./...
 
 init:
 	-mkdir -p docs
