@@ -1,0 +1,64 @@
+syntax = "proto3";
+option go_package = "./proto";
+import "google/protobuf/empty.proto";
+
+package authservice;
+
+message User {
+    string ID = 1;
+    string username = 2;
+    string password = 3;
+    string email = 4;
+}
+
+message AuthRequest {
+    string username = 1;
+    string password = 2;
+};
+
+message AuthResponse {
+    string accessToken = 1;
+    string refreshToken = 2;
+};
+
+message GetMeRequest {
+   string sessionID = 1;
+};
+
+message GetMeResponse {
+    User user = 1;
+};
+
+message UserRequest {
+    string username = 1;
+    string password = 2;
+    string email = 3;
+};
+
+message RefreshRequest {
+    string refreshToken = 1;
+};
+
+message ActivateRequest {
+    string email = 1;
+    string pinCode = 2;
+};
+
+message ResetPasswordRequest {
+    string passToken = 1;
+    string newPassword = 2;
+};
+
+message ForgetPasswordRequest {
+    string email = 1;
+};
+
+service Auth {
+    rpc Login(AuthRequest) returns (AuthResponse);
+    rpc Register(UserRequest) returns (google.protobuf.Empty);
+    rpc GetMe(GetMeRequest) returns (GetMeResponse);
+    rpc Refresh(RefreshRequest) returns (AuthResponse);
+    rpc Activate(ActivateRequest) returns (google.protobuf.Empty);
+    rpc ResetPassword(ResetPasswordRequest) returns (google.protobuf.Empty);
+    rpc ForgetPassword(ForgetPasswordRequest) returns (google.protobuf.Empty);
+};
