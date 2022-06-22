@@ -138,7 +138,7 @@ func TestMain(m *testing.M) {
 	log.Printf("TestContainer Redis %s\n", uri)
 
 	rdb = redis.NewClient(&redis.Options{
-		Addr:         redisContainerHostIP,
+		Addr:         uri,
 		MinIdleConns: 10,
 		PoolSize:     0,
 		PoolTimeout:  time.Duration(10) * time.Second,
