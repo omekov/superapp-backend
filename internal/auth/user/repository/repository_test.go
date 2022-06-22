@@ -6,13 +6,13 @@ import (
 	"log"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/docker/go-connections/nat"
 	"github.com/go-redis/redis/v8"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/jmoiron/sqlx"
 	. "github.com/omekov/superapp-backend/internal/auth/user/repository"
-	"github.com/omekov/superapp-backend/pkg/conn"
 	"github.com/omekov/superapp-backend/pkg/logger"
 	"github.com/pressly/goose/v3"
 
@@ -80,7 +80,6 @@ func TestMain(m *testing.M) {
 	log.Printf("TestContainer Postgres HOST:%s PORT:%s\n", pgContainerHostIP, pgContainerPort.Port())
 	logg := logger.NewAPILogger("debug")
 	logg.InitLogger()
-	connect := conn.New(logg)
 
 	dsn := fmt.Sprintf(
 		"host=%s port=%s dbname=%s sslmode=%s user=%s password=%s",
@@ -130,15 +129,23 @@ func TestMain(m *testing.M) {
 		log.Fatal(fmt.Errorf("redisContainer.MappedPort %s", err))
 	}
 
-	hostIP, err := redisContainer.Host(ctx)
+	redisContainerHostIP, err := redisContainer.Host(ctx)
 	if err != nil {
 		log.Fatal(fmt.Errorf("redisContainer.Host %s", err))
 	}
 
-	uri := fmt.Sprintf("%s:%s", hostIP, redisContainerPort.Port())
+	uri := fmt.Sprintf("%s:%s", redisContainerHostIP, redisContainerPort.Port())
 	log.Printf("TestContainer Redis %s\n", uri)
 
-	rdb = connect.RedisConn(ctx, configPath)
+	rdb = redis.NewClient(&redis.Options{
+		Addr:         redisContainerHostIP,
+		MinIdleConns: 10,
+		PoolSize:     0,
+		PoolTimeout:  time.Duration(10) * time.Second,
+		Password:     redisPass, // no password set
+		DB:           1,         // use default DB
+	})
+
 	os.Exit(m.Run())
 }
 
