@@ -68,14 +68,14 @@ jobs:
           envs: IMAGE_NAME,REGISTRY,GITHUB_SHA,CONTAINER_NAME
           script: |
             # Login GITHUB Registry
-            docker login -u ${{ secrets.GITHUB_TOKEN }} -p ${{ secrets.GITHUB_TOKEN }} $(echo $REGISTRY)
+            sudo docker login -u ${{ secrets.GITHUB_TOKEN }} -p ${{ secrets.GITHUB_TOKEN }} $(echo $REGISTRY)
             # Stop running container
-            docker stop $(echo $CONTAINER_NAME)
+            sudo docker stop $(echo $CONTAINER_NAME)
             # Remove old container
-            docker rm $(echo $CONTAINER_NAME)
+            sudo docker rm $(echo $CONTAINER_NAME)
             # Run a new container from a new image
-            docker pull $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
-            docker run -d --name $(echo $CONTAINER_NAME) --network="host" \
+            sudo docker pull $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
+            sudo docker run -d --name $(echo $CONTAINER_NAME) --network="host" \
             -v ~/configs/config.yml:/github.com/omekov/superapp-backend/configs/config.yml \
             --restart always \
             --publish 4040:4040 \
