@@ -12,7 +12,6 @@ env:
   REGISTRY: "ghcr.io/omekov"
   IMAGE_NAME: "superapp-backend"
   CONTAINER_NAME: "superapp-backend"
-  GIT_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   test:
@@ -45,7 +44,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: $(echo $GIT_TOKEN)
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build the superapp-backend Docker image
         run: |
@@ -66,10 +65,10 @@ jobs:
           host: ${{ secrets.DEPLOY_SERVER }}
           username: ${{ secrets.DEPLOY_SERVER_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }} 
-          envs: IMAGE_NAME,REGISTRY,GITHUB_SHA,CONTAINER_NAME,GIT_TOKEN
+          envs: IMAGE_NAME,REGISTRY,GITHUB_SHA,CONTAINER_NAME
           script: |
             # Login GITHUB Registry
-            docker login -u $(echo GIT_TOKEN) -p $(echo GIT_TOKEN) $(echo $REGISTRY)
+            docker login -u ${{ secrets.GITHUB_TOKEN }} -p ${{ secrets.GITHUB_TOKEN }} $(echo $REGISTRY)
             # Stop running container
             docker stop $(echo $CONTAINER_NAME)
             # Remove old container
