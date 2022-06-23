@@ -68,7 +68,7 @@ jobs:
           envs: IMAGE_NAME,REGISTRY,GITHUB_SHA,CONTAINER_NAME,GITHUB_TOKEN
           script: |
             # Login GITHUB Registry
-            sudo docker login -u $(echo $GITHUB_TOKEN) -p $(echo $GITHUB_TOKEN) $(echo $REGISTRY)
+            sudo docker login -u ${{ secrets.GITHUB_TOKEN }} -p ${{ secrets.GITHUB_TOKEN }} $(echo $REGISTRY)
             # Stop running container
             sudo docker stop $(echo $CONTAINER_NAME)
             # Remove old container
