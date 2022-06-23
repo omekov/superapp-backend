@@ -2,8 +2,8 @@ FROM golang:1.18-alpine3.16 AS builder
 
 RUN go version
 
+COPY . /github.com/omekov/superapp-backend/
 WORKDIR /github.com/omekov/superapp-backend/
-COPY . .
 
 RUN go clean --modcache
 RUN go mod download && \
@@ -11,6 +11,7 @@ RUN go mod download && \
 
 FROM alpine:latest
 
-COPY --from=0 /github.com/omekov/superapp-backend/auth /
+WORKDIR /root/
+COPY --from=0 /github.com/omekov/superapp-backend/auth .
 
 CMD ["./auth"]
