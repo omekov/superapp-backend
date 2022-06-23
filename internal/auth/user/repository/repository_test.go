@@ -141,7 +141,7 @@ func TestMain(m *testing.M) {
 		Addr:         uri,
 		MinIdleConns: 10,
 		PoolSize:     0,
-		PoolTimeout:  time.Duration(10) * time.Second,
+		PoolTimeout:  10 * time.Second,
 		Password:     redisPass, // no password set
 		DB:           1,         // use default DB
 	})
