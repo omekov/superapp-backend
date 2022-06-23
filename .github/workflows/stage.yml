@@ -66,7 +66,20 @@ jobs:
           username: ${{ secrets.DEPLOY_SERVER_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }} 
           envs: IMAGE_NAME,REGISTRY,GITHUB_SHA,CONTAINER_NAME,GITHUB_TOKEN
-          script: whoami
-            
+          script: |
+            # Login GITHUB Registry
+            sudo docker login -u $(echo $GITHUB_TOKEN) -p $(echo $GITHUB_TOKEN) $(echo $REGISTRY)
+            # Stop running container
+            sudo docker stop $(echo $CONTAINER_NAME)
+            # Remove old container
+            sudo docker rm $(echo $CONTAINER_NAME)
+            # Run a new container from a new image
+            sudo docker pull $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
+            sudo docker ps -a
+            sudo docker images
+            # sudo docker run -d --name $(echo $CONTAINER_NAME) \
+            # -v ~/configs/config.yaml:/github.com/omekov/superapp-backend/configs/config.yaml \
+            # -p 4040:4040 \
+            # $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
 
 
