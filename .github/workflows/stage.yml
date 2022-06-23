@@ -44,6 +44,5 @@ jobs:
       - name: Build the superapp-backend Docker image
         run: |
           docker build . --tag ghcr.io/omekov/superapp-backend:latest
-          docker run ghcr.io/omekov/superapp-backend:latest
           docker push ghcr.io/omekov/superapp-backend:latest
 
