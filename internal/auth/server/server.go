@@ -76,7 +76,7 @@ func Run(port, cfgPath string) error {
 	}
 
 	if cfg.GRPC.TLS {
-		cert, err := tls.LoadX509KeyPair("fullchain.pem", "privkey.pem")
+		cert, err := tls.LoadX509KeyPair(cfg.GRPC.CertFile, cfg.GRPC.KeyFile)
 		if err != nil {
 			logg.Fatal("tls LoadX509KeyPair", err.Error())
 		}

@@ -71,14 +71,11 @@ jobs:
             sudo docker login -u ${{ secrets.GITHUB_TOKEN }} -p ${{ secrets.GITHUB_TOKEN }} $(echo $REGISTRY)
             # Stop running container
             sudo docker stop $(echo $CONTAINER_NAME)
-            # Remove old container
-            sudo docker rm $(echo $CONTAINER_NAME)
             # Run a new container from a new image
             sudo docker pull $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
-            sudo docker run -d --name $(echo $CONTAINER_NAME) \
+            sudo docker run -d --rm --name $(echo $CONTAINER_NAME) \
             -v ~/configs/config.yaml:/root/configs/config.yaml \
-            -v /etc/letsencrypt/live/${{ secrets.DOMAIN }}/fullchain.pem:/root/fullchain.pem \
-            -v /etc/letsencrypt/live/${{ secrets.DOMAIN }}/privkey.pem:/root/privkey.pem \
+            -v /etc/letsencrypt/live/${{ secrets.DOMAIN }}:/etc/letsencrypt/live/{{ secrets.DOMAIN }} \
             --restart always \
             --network="host" \
             --publish 4040:4040 \

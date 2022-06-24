@@ -87,6 +87,8 @@ type GRPC struct {
 	MaxConnectionAge  time.Duration `yaml:"maxConnectionAge"`
 	Time              time.Duration `yaml:"time"`
 	TLS               bool          `yaml:"tls"`
+	CertFile          string        `yaml:"certFile"`
+	KeyFile           string        `yaml:"keyFile"`
 }
 
 // New ...
