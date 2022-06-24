@@ -77,6 +77,8 @@ jobs:
             sudo docker pull $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
             sudo docker run -d --name $(echo $CONTAINER_NAME) \
             -v ~/configs/config.yaml:/root/configs/config.yaml \
+            -v /etc/letsencrypt/live/${{ secrets.DOMAIN }}/fullchain.pem:/root/fullchain.pem \
+            -v /etc/letsencrypt/live/${{ secrets.DOMAIN }}/privkey.pem:/root/privkey.pem \
             --restart always \
             --network="host" \
             --publish 4040:4040 \

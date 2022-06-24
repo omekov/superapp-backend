@@ -46,7 +46,7 @@ func (c *Conn) SQLXConn(ctx context.Context, configYamlPath string) *sqlx.DB {
 func (c *Conn) RedisConn(ctx context.Context, configYamlPath string) *redis.Client {
 	client, err := c.redisInit(ctx, configYamlPath)
 	if err != nil {
-		c.logg.Errorf("sqlx.Connect: %s", err)
+		c.logg.Errorf("c.redisInit: %s", err)
 		ticker := time.NewTicker(c.pgTimeAttempt * time.Second)
 		defer ticker.Stop()
 		for range ticker.C {

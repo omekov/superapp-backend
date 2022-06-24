@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"crypto/tls"
 	"net"
 	"os"
 	"os/signal"
@@ -22,6 +23,7 @@ import (
 	"github.com/omekov/superapp-backend/pkg/logger"
 	"github.com/omekov/superapp-backend/pkg/mailer"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
 )
 
@@ -59,21 +61,33 @@ func Run(port, cfgPath string) error {
 	serv := service.NewService(repo, jwt, logg, mail)
 	im := interceptors.NewInterceptorManager(logg)
 
-	grpcServer := grpc.NewServer(grpc.KeepaliveParams(keepalive.ServerParameters{
-		MaxConnectionIdle: cfg.GRPC.MaxConnectionIdle * time.Minute,
-		Timeout:           cfg.GRPC.Timeout * time.Second,
-		MaxConnectionAge:  cfg.GRPC.MaxConnectionAge * time.Minute,
-		Time:              cfg.GRPC.Time * time.Minute,
-	}),
+	opts := []grpc.ServerOption{
+		grpc.KeepaliveParams(keepalive.ServerParameters{
+			MaxConnectionIdle: cfg.GRPC.MaxConnectionIdle * time.Minute,
+			Timeout:           cfg.GRPC.Timeout * time.Second,
+			MaxConnectionAge:  cfg.GRPC.MaxConnectionAge * time.Minute,
+			Time:              cfg.GRPC.Time * time.Minute,
+		}),
 		grpc.UnaryInterceptor(im.Logger),
 		grpc.ChainUnaryInterceptor(
 			grpc_ctxtags.UnaryServerInterceptor(),
 			grpcrecovery.UnaryServerInterceptor(),
 		),
-	)
+	}
+
+	if cfg.GRPC.TLS {
+		cert, err := tls.LoadX509KeyPair("fullchain.pem", "privkey.pem")
+		if err != nil {
+			logg.Fatal("tls LoadX509KeyPair", err.Error())
+		}
+		opts = append(opts, grpc.Creds(credentials.NewServerTLSFromCert(&cert)))
+	}
+
+	grpcServer := grpc.NewServer(opts)
 	proto.RegisterAuthServer(grpcServer, &mygrpc.Server{Service: serv, Logg: logg})
 
 	go func() {
+
 		l, err := net.Listen("tcp", port)
 		if err != nil {
 			logg.Fatal("tcp connection err: ", err.Error())

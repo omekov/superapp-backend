@@ -21,6 +21,7 @@ grpc:
   timeout: 5s
   maxConnectionAge: 5s
   time: 5s
+  tls: false
 mail:
   timeout: 5s
   host: "mail.com"

@@ -46,7 +46,7 @@ docker:
 local-db:
 	-docker kill superapp_postgres
 	-docker run -d --rm --name=superapp_postgres \
-		-e POSTGRES_PASSWORD=e#f^cSX@^R6H+rwN \
+		-e POSTGRES_PASSWORD=password \
 		-e POSTGRES_USER=superapp_user \
 		-e POSTGRES_DB=superapp_auth \
 		-p 3432:5432 \
