@@ -83,7 +83,7 @@ func Run(port, cfgPath string) error {
 		opts = append(opts, grpc.Creds(credentials.NewServerTLSFromCert(&cert)))
 	}
 
-	grpcServer := grpc.NewServer(opts)
+	grpcServer := grpc.NewServer(opts...)
 	proto.RegisterAuthServer(grpcServer, &mygrpc.Server{Service: serv, Logg: logg})
 
 	go func() {
