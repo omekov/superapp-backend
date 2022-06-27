@@ -16,7 +16,7 @@ type Config struct {
 	Server Server
 	JWT    JWT          `yaml:"jwt"`
 	GRPC   GRPC         `yaml:"grpc"`
-	Mailer MailerConfig `yaml:"mail"`
+	Mailer MailerConfig `yaml:"mailer"`
 }
 
 // Logger ...

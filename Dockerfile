@@ -14,4 +14,4 @@ FROM alpine:latest
 WORKDIR /root/
 COPY --from=0 /github.com/omekov/superapp-backend/auth .
 
-CMD ["./auth -port 443"]
+CMD ["./auth"]
