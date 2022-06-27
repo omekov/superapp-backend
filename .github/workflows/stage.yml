@@ -77,10 +77,10 @@ jobs:
             sudo docker pull $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
             sudo docker run -d --name $(echo $CONTAINER_NAME) \
             -v ~/configs/config.yaml:/root/configs/config.yaml \
-            -v /etc/letsencrypt/live/${{ secrets.DOMAIN }}:/etc/letsencrypt/live/${{ secrets.DOMAIN }} \
+            -v /etc/letsencrypt/live/${{ secrets.DOMAIN }}:/root/ \
             --restart always \
             --network="host" \
-            --publish 4040:4040 \
+            --publish 443:443 \
             $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
 
 
