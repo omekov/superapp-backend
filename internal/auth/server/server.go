@@ -80,7 +80,11 @@ func Run(port, cfgPath string) error {
 		if err != nil {
 			logg.Fatal("tls LoadX509KeyPair", err.Error())
 		}
-		opts = append(opts, grpc.Creds(credentials.NewServerTLSFromCert(&cert)))
+		tlsConfig := &tls.Config{
+			Certificates: []tls.Certificate{cert},
+			ClientAuth:   tls.NoClientCert,
+		}
+		opts = append(opts, grpc.Creds(credentials.NewTLS(tlsConfig)))
 	}
 
 	grpcServer := grpc.NewServer(opts...)
