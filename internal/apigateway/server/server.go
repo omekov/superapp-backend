@@ -52,6 +52,6 @@ func Run(port, configPath string) error {
 			w.Write(byteToken)
 		}
 	})
-	http.ListenAndServe(":5051", mux)
+	http.ListenAndServe(":4041", mux)
 	return nil
 }
