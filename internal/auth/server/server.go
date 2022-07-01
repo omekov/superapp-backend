@@ -22,6 +22,7 @@ import (
 	"github.com/omekov/superapp-backend/pkg/jwt"
 	"github.com/omekov/superapp-backend/pkg/logger"
 	"github.com/omekov/superapp-backend/pkg/mailer"
+	"github.com/pressly/goose/v3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/keepalive"
@@ -31,24 +32,24 @@ import (
 // Run ...
 func Run(port, cfgPath string) error {
 
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	logg := logger.NewAPILogger("info")
-	logg.InitLogger()
-
-	_cfg := config.New(logg)
+	_cfg := config.New()
 	cfg, err := _cfg.Get(cfgPath)
 	if err != nil {
 		return err
 	}
 
+	logg := logger.NewAPILogger(cfg.Logger.Level)
+	logg.InitLogger()
+
 	connect := conn.New(logg)
 
 	dbx := connect.SQLXConn(ctx, cfgPath)
-	// if err := goose.Up(dbx.DB, "../../migrations/auth", goose.WithAllowMissing()); err != nil {
-	// 	return err
-	// }
+	if err := goose.Up(dbx.DB, cfg.Migrate.MigrateAuthPath, goose.WithAllowMissing()); err != nil {
+		return err
+	}
 
 	rdb := connect.RedisConn(ctx, cfgPath)
 
@@ -91,7 +92,6 @@ func Run(port, cfgPath string) error {
 	proto.RegisterAuthServer(grpcServer, &mygrpc.Server{Service: serv, Logg: logg})
 
 	go func() {
-
 		l, err := net.Listen("tcp", port)
 		if err != nil {
 			logg.Fatal("tcp connection err: ", err.Error())

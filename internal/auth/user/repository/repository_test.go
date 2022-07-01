@@ -25,10 +25,6 @@ var (
 	rdb *redis.Client
 )
 
-const (
-	configPath = "../../../../configs/example.config.yaml"
-)
-
 func TestMain(m *testing.M) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

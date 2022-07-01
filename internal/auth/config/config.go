@@ -11,12 +11,13 @@ import (
 
 // Config ...
 type Config struct {
-	logg   *logger.APILogger
-	Logger Logger
-	Server Server
-	JWT    JWT          `yaml:"jwt"`
-	GRPC   GRPC         `yaml:"grpc"`
-	Mailer MailerConfig `yaml:"mailer"`
+	logg    *logger.APILogger
+	Server  Server
+	Logger  Logger       `yaml:"logger"`
+	JWT     JWT          `yaml:"jwt"`
+	GRPC    GRPC         `yaml:"grpc"`
+	Mailer  MailerConfig `yaml:"mailer"`
+	Migrate Migrate      `yaml:"migrate"`
 }
 
 // Logger ...
@@ -25,7 +26,7 @@ type Logger struct {
 	DisableCaller     bool
 	DisableStacktrace bool
 	Encoding          string
-	Level             string
+	Level             string `yaml:"level"`
 }
 
 // MailerConfig ...
@@ -91,8 +92,15 @@ type GRPC struct {
 	KeyFile           string        `yaml:"keyFile"`
 }
 
+// Migrate ...
+type Migrate struct {
+	MigrateAuthPath string `yaml:"migrateAuthPath"`
+}
+
 // New ...
-func New(logg *logger.APILogger) *Config {
+func New() *Config {
+	logg := logger.NewAPILogger("info")
+	logg.InitLogger()
 	return &Config{logg: logg}
 }
 

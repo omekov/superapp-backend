@@ -2,326 +2,30 @@ package repository_test
 
 import (
 	"context"
-	"database/sql"
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	. "github.com/omekov/superapp-backend/internal/auth/user/repository"
+	"github.com/omekov/superapp-backend/pkg/grpc_errors"
 	"github.com/omekov/superapp-backend/pkg/logger"
 	"github.com/stretchr/testify/require"
 )
 
-func TestUser_Create(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-	defer cancel()
-
-	logging := logger.NewAPILogger("debug")
-	testCases := []struct {
-		name       string
-		wantErr    bool
-		createUser User
-		repo       *Repository
-	}{
-		{
-			"valid",
-			false,
-			TestGetUser(t),
-			NewRepository(rdb, dbx, logging),
-		},
-		{
-			"invalid dbx is nil",
-			true,
-			TestGetUser(t),
-			NewRepository(rdb, nil, logging),
-		},
-		{
-			"invalid duplicated err",
-			false,
-			TestGetUser(t),
-			NewRepository(rdb, dbx, logging),
-		},
-	}
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			userID, err := tc.repo.User.Create(ctx, tc.createUser)
-			if err != nil {
-				if tc.wantErr {
-					require.Equal(t, err, ErrNotConnection)
-				} else {
-					require.Error(t, err)
-				}
-				return
-			}
-			require.NoError(t, err)
-			require.NotEmpty(t, userID)
-		})
-	}
-
-}
-
-func TestUser_GetByUsername(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-	defer cancel()
-
-	logging := logger.NewAPILogger("debug")
-	testCases := []struct {
-		name           string
-		wantCreateUser bool
-		wantErr        bool
-		payload        User
-		repo           *Repository
-		err            error
-	}{
-		{
-			"valid",
-			true,
-			false,
-			TestGetUser2(t),
-			NewRepository(rdb, dbx, logging),
-			nil,
-		},
-		{
-			"invalid dbx is nil",
-			false,
-			true,
-			TestGetUser2(t),
-			NewRepository(rdb, nil, logging),
-			ErrNotConnection,
-		},
-		{
-			"invalid no rows",
-			false,
-			true,
-			User{},
-			NewRepository(rdb, dbx, logging),
-			sql.ErrNoRows,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			if tc.wantCreateUser {
-				_, err := tc.repo.User.Create(ctx, tc.payload)
-				require.NoError(t, err)
-			}
-
-			user, err := tc.repo.User.GetByUsername(ctx, tc.payload.UserName)
-			if err != nil {
-				if tc.wantErr {
-					require.Equal(t, err, tc.err)
-				} else {
-					require.Error(t, err)
-				}
-				return
-			}
-			require.Equal(t, tc.payload, user)
-		})
-	}
-}
-
-func TestUser_GetByID(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-	defer cancel()
-
-	logging := logger.NewAPILogger("debug")
-	testCases := []struct {
-		name           string
-		wantCreateUser bool
-		wantErr        bool
-		payload        User
-		repo           *Repository
-		err            error
-	}{
-		{
-			"valid",
-			true,
-			false,
-			TestGetUser3(t),
-			NewRepository(rdb, dbx, logging),
-			nil,
-		},
-		{
-			"invalid dbx is nil",
-			false,
-			true,
-			TestGetUser3(t),
-			NewRepository(rdb, nil, logging),
-			ErrNotConnection,
-		},
-		{
-			"invalid no rows",
-			false,
-			true,
-			User{},
-			NewRepository(rdb, dbx, logging),
-			sql.ErrNoRows,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			if tc.wantCreateUser {
-				_, err := tc.repo.User.Create(ctx, tc.payload)
-				require.NoError(t, err)
-			}
-
-			user, err := tc.repo.User.GetByID(ctx, tc.payload.ID)
-			if err != nil {
-				if tc.wantErr {
-					require.Equal(t, err, tc.err)
-				} else {
-					require.Error(t, err)
-				}
-				return
-			}
-			require.Equal(t, tc.payload, user)
-		})
-	}
-}
-
-func TestUser_GetByEmail(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-	defer cancel()
-
-	logging := logger.NewAPILogger("debug")
-	testCases := []struct {
-		name           string
-		wantCreateUser bool
-		wantErr        bool
-		payload        User
-		repo           *Repository
-		err            error
-	}{
-		{
-			"valid",
-			true,
-			false,
-			TestGetUser4(t),
-			NewRepository(rdb, dbx, logging),
-			nil,
-		},
-		{
-			"invalid dbx is nil",
-			false,
-			true,
-			TestGetUser4(t),
-			NewRepository(rdb, nil, logging),
-			ErrNotConnection,
-		},
-		{
-			"invalid no rows",
-			false,
-			true,
-			User{},
-			NewRepository(rdb, dbx, logging),
-			sql.ErrNoRows,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			if tc.wantCreateUser {
-				_, err := tc.repo.User.Create(ctx, tc.payload)
-				require.NoError(t, err)
-			}
-
-			user, err := tc.repo.User.GetByEmail(ctx, tc.payload.Email)
-			if err != nil {
-				if tc.wantErr {
-					require.Equal(t, err, tc.err)
-				} else {
-					require.Error(t, err)
-				}
-				return
-			}
-			require.Equal(t, tc.payload, user)
-		})
-	}
-}
-
-func TestUser_UpdatePassword(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-	defer cancel()
-
-	logging := logger.NewAPILogger("debug")
-	newPassword := "test"
-	testCases := []struct {
-		name           string
-		wantCreateUser bool
-		wantErr        bool
-		payload        User
-		repo           *Repository
-		err            error
-	}{
-		{
-			"valid",
-			true,
-			false,
-			TestGetUser5(t),
-			NewRepository(rdb, dbx, logging),
-			nil,
-		},
-		{
-			"invalid dbx is nil",
-			false,
-			true,
-			TestGetUser5(t),
-			NewRepository(rdb, nil, logging),
-			ErrNotConnection,
-		},
-		{
-			"invalid no rows",
-			false,
-			true,
-			User{
-				ID: uuid.New(),
-			},
-			NewRepository(rdb, dbx, logging),
-			ErrNoRowsUpdated,
-		},
-	}
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			if tc.wantCreateUser {
-				_, err := tc.repo.User.Create(ctx, tc.payload)
-				require.NoError(t, err)
-			}
-
-			err := tc.repo.User.UpdatePassword(ctx, tc.payload.ID, newPassword)
-			if err != nil {
-				if tc.wantErr {
-					require.Equal(t, err, tc.err)
-				} else {
-					require.Error(t, err)
-				}
-			}
-
-			user, err := tc.repo.User.GetByID(ctx, tc.payload.ID)
-			if err != nil {
-				require.Error(t, err)
-			} else {
-				require.NoError(t, err)
-				require.Equal(t, user.Password, newPassword)
-			}
-		})
-	}
-}
-
-func Test_UpdateState(t *testing.T) {
+func TestUser_SetCacheUser(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
 	type args struct {
-		pinCode string
-		state   string
+		key     string
+		seconds int
+		user    User
 	}
+	user := TestGetUser(t)
 	logging := logger.NewAPILogger("debug")
 	testCases := []struct {
 		name           string
 		wantCreateUser bool
 		wantErr        bool
-		payload        User
 		args           args
 		repo           *Repository
 		err            error
@@ -330,49 +34,30 @@ func Test_UpdateState(t *testing.T) {
 			"valid",
 			true,
 			false,
-			TestGetUser6(t),
 			args{
-				pinCode: "123456",
-				state:   "enabled",
+				key:     user.ID.String(),
+				seconds: 0,
+				user:    user,
 			},
 			NewRepository(rdb, dbx, logging),
 			nil,
 		},
 		{
-			"invalid dbx is nil",
+			"invalid rdb is nil",
 			false,
 			true,
-			TestGetUser6(t),
 			args{
-				pinCode: "123456",
-				state:   "enabled",
+				key:     user.ID.String(),
+				seconds: 0,
+				user:    user,
 			},
-			NewRepository(rdb, nil, logging),
+			NewRepository(nil, nil, logging),
 			ErrNotConnection,
-		},
-		{
-			"invalid no rows",
-			false,
-			true,
-			User{
-				ID: uuid.New(),
-			},
-			args{
-				pinCode: "123456",
-				state:   "enabled",
-			},
-			NewRepository(rdb, dbx, logging),
-			ErrNoRowsUpdated,
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			if tc.wantCreateUser {
-				_, err := tc.repo.User.Create(ctx, tc.payload)
-				require.NoError(t, err)
-			}
-
-			err := tc.repo.User.UpdateState(ctx, tc.payload.ID, tc.args.state, tc.args.pinCode)
+			err := tc.repo.User.SetCacheUser(ctx, tc.args.key, tc.args.seconds, &tc.args.user)
 			if err != nil {
 				if tc.wantErr {
 					require.Equal(t, err, tc.err)
@@ -380,14 +65,330 @@ func Test_UpdateState(t *testing.T) {
 					require.Error(t, err)
 				}
 			}
+		})
+	}
+}
 
-			user, err := tc.repo.User.GetByEmail(ctx, tc.payload.Email)
+func TestUser_GetCacheByID(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	type args struct {
+		id string
+	}
+	expUser := TestGetUser(t)
+	logging := logger.NewAPILogger("debug")
+	testCases := []struct {
+		name           string
+		wantCreateUser bool
+		wantErr        bool
+		args           args
+		repo           *Repository
+		err            error
+	}{
+		{
+			"valid",
+			true,
+			false,
+			args{
+				id: expUser.ID.String(),
+			},
+			NewRepository(rdb, dbx, logging),
+			nil,
+		},
+		{
+			"invalid rdb is nil",
+			false,
+			true,
+			args{
+				id: expUser.ID.String(),
+			},
+			NewRepository(nil, nil, logging),
+			ErrNotConnection,
+		},
+		{
+			"invalid rdb userId not found",
+			true,
+			true,
+			args{
+				id: expUser.ID.String() + "test",
+			},
+			NewRepository(rdb, dbx, logging),
+			grpc_errors.ErrNotFound,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			user, err := tc.repo.User.GetCacheByID(ctx, tc.args.id)
 			if err != nil {
-				require.Error(t, err)
+				if tc.wantErr {
+					require.Equal(t, err, tc.err)
+				} else {
+					require.Error(t, err)
+				}
 			} else {
+				require.Equal(t, user, expUser)
+			}
+		})
+	}
+}
+
+func TestUser_DeleteCacheUser(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	type args struct {
+		key string
+	}
+	expUser := TestGetUser(t)
+	logging := logger.NewAPILogger("debug")
+	testCases := []struct {
+		name           string
+		wantCreateUser bool
+		wantErr        bool
+		args           args
+		repo           *Repository
+		err            error
+	}{
+		{
+			"valid",
+			true,
+			false,
+			args{
+				key: expUser.ID.String(),
+			},
+			NewRepository(rdb, dbx, logging),
+			nil,
+		},
+		{
+			"invalid rdb is nil",
+			false,
+			true,
+			args{
+				key: expUser.ID.String(),
+			},
+			NewRepository(nil, nil, logging),
+			ErrNotConnection,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.repo.User.DeleteCacheUser(ctx, tc.args.key)
+			if err != nil {
+				if tc.wantErr {
+					require.Equal(t, err, tc.err)
+				} else {
+					require.Error(t, err)
+				}
+			}
+		})
+	}
+}
+
+func TestUser_CreateSession(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	type args struct {
+		sess   Session
+		expire int
+	}
+	expUser := TestGetUser(t)
+	logging := logger.NewAPILogger("debug")
+	testCases := []struct {
+		name           string
+		wantCreateUser bool
+		wantErr        bool
+		args           args
+		repo           *Repository
+		err            error
+	}{
+		{
+			"valid",
+			true,
+			false,
+			args{
+				sess: Session{
+					UserID: expUser.ID,
+				},
+				expire: 0,
+			},
+			NewRepository(rdb, dbx, logging),
+			nil,
+		},
+		{
+			"invalid rdb is nil",
+			false,
+			true,
+			args{
+				sess: Session{
+					UserID: expUser.ID,
+				},
+				expire: 0,
+			},
+			NewRepository(nil, nil, logging),
+			ErrNotConnection,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			sessID, err := tc.repo.User.CreateSession(ctx, &tc.args.sess, tc.args.expire)
+			if err != nil {
+				if tc.wantErr {
+					require.Equal(t, err, tc.err)
+				} else {
+					require.Error(t, err)
+				}
+			} else {
+				require.NotEmpty(t, sessID)
+			}
+		})
+	}
+}
+
+func TestUser_GetSessionByID(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	type args struct {
+		sess   Session
+		expire int
+	}
+	expUser := TestGetUser2(t)
+	logging := logger.NewAPILogger("debug")
+	testCases := []struct {
+		name              string
+		wantCreateSession bool
+		wantErr           bool
+		args              args
+		repo              *Repository
+		err               error
+	}{
+		{
+			"valid",
+			true,
+			false,
+			args{
+				sess: Session{
+					UserID: expUser.ID,
+				},
+				expire: 0,
+			},
+			NewRepository(rdb, dbx, logging),
+			nil,
+		},
+		{
+			"invalid rdb is nil",
+			false,
+			true,
+			args{
+				sess: Session{
+					UserID: expUser.ID,
+				},
+				expire: 0,
+			},
+			NewRepository(nil, nil, logging),
+			ErrNotConnection,
+		},
+		{
+			"invalid rdb sessionId nof found",
+			false,
+			true,
+			args{
+				sess: Session{
+					UserID: expUser.ID,
+				},
+				expire: 0,
+			},
+			NewRepository(rdb, dbx, logging),
+			grpc_errors.ErrNotFound,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var sessID string = "test"
+			var err error
+			if tc.wantCreateSession {
+				sessID, err = tc.repo.User.CreateSession(ctx, &tc.args.sess, tc.args.expire)
 				require.NoError(t, err)
-				require.Equal(t, user.PinCode, tc.args.pinCode)
-				require.Equal(t, user.State, tc.args.state)
+			}
+
+			sess, err := tc.repo.User.GetSessionByID(ctx, sessID)
+			if err != nil {
+				if tc.wantErr {
+					require.Equal(t, err, tc.err)
+				} else {
+					require.Error(t, err)
+				}
+			} else {
+				require.Equal(t, sess.SessionID, sessID)
+				require.Equal(t, sess.UserID, tc.args.sess.UserID)
+			}
+		})
+	}
+}
+
+func TestUser_DeleteSessionByID(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	type args struct {
+		sess   Session
+		expire int
+	}
+	expUser := TestGetUser3(t)
+	logging := logger.NewAPILogger("debug")
+	testCases := []struct {
+		name              string
+		wantCreateSession bool
+		wantErr           bool
+		args              args
+		repo              *Repository
+		err               error
+	}{
+		{
+			"valid",
+			true,
+			false,
+			args{
+				sess: Session{
+					UserID: expUser.ID,
+				},
+				expire: 0,
+			},
+			NewRepository(rdb, dbx, logging),
+			nil,
+		},
+		{
+			"invalid rdb is nil",
+			false,
+			true,
+			args{
+				sess: Session{
+					UserID: expUser.ID,
+				},
+				expire: 0,
+			},
+			NewRepository(nil, nil, logging),
+			ErrNotConnection,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var sessID string
+			var err error
+			if tc.wantCreateSession {
+				sessID, err = tc.repo.User.CreateSession(ctx, &tc.args.sess, tc.args.expire)
+				require.NoError(t, err)
+			}
+
+			err = tc.repo.User.DeleteSessionByID(ctx, sessID)
+			if err != nil {
+				if tc.wantErr {
+					require.Equal(t, err, tc.err)
+				} else {
+					require.Error(t, err)
+				}
 			}
 		})
 	}

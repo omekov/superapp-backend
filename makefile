@@ -1,12 +1,17 @@
 # See README.txt.
 
-.PHONY: run init proto clean docker
+.PHONY: run test init proto clean docker cover
 
 run:
 	go run ./cmd/auth/*.go
 
 test:
 	go test -v -cover -timeout 60s ./...
+
+cover:
+	go test -short -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out
+	rm coverage.out
 
 init:
 	-mkdir -p docs

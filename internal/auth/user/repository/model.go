@@ -88,6 +88,20 @@ func TestGetUser5(t *testing.T) User {
 	}
 }
 
+// TestGetUser6 ...
+func TestGetUser6(t *testing.T) User {
+	t.Helper()
+	id, _ := uuid.Parse("4cc54cc6-92fb-4002-bf3c-331b8762eac0")
+	return User{
+		ID:       id,
+		UserName: "azamat6",
+		Password: "password",
+		State:    "enabled",
+		Email:    "azamat6@example.com",
+		PinCode:  "654321",
+	}
+}
+
 type Address struct {
 	Country  string
 	Region   string

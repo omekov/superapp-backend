@@ -3,13 +3,13 @@ package repository
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 	"github.com/omekov/superapp-backend/pkg/grpc_errors"
-	"github.com/pkg/errors"
 )
 
 func (r *userRepo) SetCacheUser(ctx context.Context, key string, seconds int, user *User) error {
@@ -38,7 +38,7 @@ func (r *userRepo) GetCacheByID(ctx context.Context, key string) (User, error) {
 
 	userBytes, err := r.rdb.Get(ctx, fmt.Sprintf("%s:%s", userKey, key)).Bytes()
 	if err != nil {
-		if err != redis.Nil {
+		if errors.Is(err, redis.Nil) {
 			return user, grpc_errors.ErrNotFound
 		}
 		return user, err
@@ -75,11 +75,11 @@ func (r *userRepo) CreateSession(ctx context.Context, sess *Session, expire int)
 
 	sessBytes, err := json.Marshal(&sess)
 	if err != nil {
-		return "", errors.WithMessage(err, "userRepo.CreateSession.json.Marshal")
+		return "", err
 	}
 
 	if err = r.rdb.Set(ctx, sessionKey, sessBytes, time.Second*time.Duration(expire)).Err(); err != nil {
-		return "", errors.Wrap(err, "userRepo.CreateSession.redisClient.Set")
+		return "", err
 	}
 
 	return sess.SessionID, nil
@@ -97,11 +97,14 @@ func (r *userRepo) GetSessionByID(ctx context.Context, sessionID string) (Sessio
 
 	sessBytes, err := r.rdb.Get(ctx, fmt.Sprintf("%s:%s", sessionKey, sessionID)).Bytes()
 	if err != nil {
-		return sess, errors.Wrap(err, "userRepo.GetSessionByID.redisClient.Get")
+		if errors.Is(err, redis.Nil) {
+			return sess, grpc_errors.ErrNotFound
+		}
+		return sess, err
 	}
 
 	if err = json.Unmarshal(sessBytes, &sess); err != nil {
-		return sess, errors.Wrap(err, "userRepo.GetSessionByID.json.Unmarshal")
+		return sess, err
 	}
 	return sess, nil
 }

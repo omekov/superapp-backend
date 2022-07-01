@@ -9,6 +9,16 @@ import (
 	"github.com/omekov/superapp-backend/pkg/logger"
 )
 
+type Repository struct {
+	User Userer
+}
+
+func NewRepository(rdb *redis.Client, db *sqlx.DB, log logger.Logger) *Repository {
+	return &Repository{
+		User: newUserRepo(rdb, db, log),
+	}
+}
+
 type Userer interface {
 	Create(ctx context.Context, user User) (uuid.UUID, error)
 	GetByUsername(ctx context.Context, username string) (User, error)
@@ -22,14 +32,4 @@ type Userer interface {
 	UpdatePassword(ctx context.Context, userID uuid.UUID, newPassword string) error
 	GetByEmail(ctx context.Context, email string) (User, error)
 	UpdateState(ctx context.Context, userID uuid.UUID, state, pinCode string) error
-}
-
-type Repository struct {
-	User Userer
-}
-
-func NewRepository(rdb *redis.Client, db *sqlx.DB, log logger.Logger) *Repository {
-	return &Repository{
-		User: newUserRepo(rdb, db, log),
-	}
 }
