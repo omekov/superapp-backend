@@ -89,7 +89,7 @@ func (l *APILogger) InitLogger() {
 	logger := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
 
 	l.sugarLogger = logger.Sugar()
-	if err := l.sugarLogger.Sync(); err != nil && !errors.Is(err, syscall.ENOTTY) {
+	if err := l.sugarLogger.Sync(); err != nil && errors.Is(err, syscall.ENOTTY) {
 		l.sugarLogger.Error(err)
 	}
 }

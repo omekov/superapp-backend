@@ -10,8 +10,10 @@ on:
 
 env:
   REGISTRY: "ghcr.io/omekov"
-  IMAGE_NAME: "superapp-backend"
-  CONTAINER_NAME: "superapp-backend"
+  IMAGE_NAME_AUTH: "superapp-backend-auth"
+  IMAGE_NAME_APIGATEWAY: "superapp-backend-apigateway"
+  CONTAINER_NAME_AUTH: "superapp-backend-auth"
+  CONTAINER_NAME_APIGATEWAY: "superapp-backend-apigateway"
 
 jobs:
   test:
@@ -30,6 +32,8 @@ jobs:
 
       - name: Mocks generate files
         run: |
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.27.1
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
           go install github.com/golang/mock/mockgen@v1.6.0
           go generate ./...
 
@@ -52,10 +56,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build the superapp-backend Docker image
+      - name: Build the superapp-backend microservice auth Docker image
         run: |
-          docker build . --tag $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
-          docker push $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
+          docker build -f auth.Dockerfile . --tag $(echo $REGISTRY)/$(echo $IMAGE_NAME_AUTH):$(echo $GITHUB_SHA | head -c7)
+          docker push $(echo $REGISTRY)/$(echo $IMAGE_NAME_AUTH):$(echo $GITHUB_SHA | head -c7)
+
+      - name: Build the superapp-backend microservice apigateway Docker image
+        run: |
+          docker build -f apigateway.Dockerfile . --tag $(echo $REGISTRY)/$(echo $IMAGE_NAME_APIGATEWAY):$(echo $GITHUB_SHA | head -c7)
+          docker push $(echo $REGISTRY)/$(echo $IMAGE_NAME_APIGATEWAY):$(echo $GITHUB_SHA | head -c7)
   
   deploy:
     runs-on: ubuntu-latest
@@ -71,24 +80,42 @@ jobs:
           host: ${{ secrets.DEPLOY_SERVER }}
           username: ${{ secrets.DEPLOY_SERVER_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }} 
-          envs: IMAGE_NAME,REGISTRY,GITHUB_SHA,CONTAINER_NAME,GITHUB_TOKEN
+          envs: IMAGE_NAME_APIGATEWAY,IMAGE_NAME_AUTH,REGISTRY,GITHUB_SHA,CONTAINER_NAME_AUTH,CONTAINER_NAME_APIGATEWAY,GITHUB_TOKEN
           script: |
             # Login GITHUB Registry
             sudo docker login -u ${{ secrets.GITHUB_TOKEN }} -p ${{ secrets.GITHUB_TOKEN }} $(echo $REGISTRY)
+            #####
+            ## AUTH
+            #####
             # Stop running container
-            sudo docker stop $(echo $CONTAINER_NAME)
+            sudo docker stop $(echo $CONTAINER_NAME_AUTH)
             # Remove old container
-            sudo docker rm $(echo $CONTAINER_NAME)
+            sudo docker rm $(echo $CONTAINER_NAME_AUTH)
             # Run a new container from a new image
-            sudo docker pull $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
+            sudo docker pull $(echo $REGISTRY)/$(echo $IMAGE_NAME_AUTH):$(echo $GITHUB_SHA | head -c7)
             # Run migration
-            sudo docker run -d --name $(echo $CONTAINER_NAME) \
+            sudo docker run -d --name $(echo $CONTAINER_NAME_AUTH) \
             -v ~/configs/config.yaml:/root/configs/config.yaml \
             -v /cert/cert.pem:/root/cert.pem \
             -v /cert/key.pem:/root/key.pem \
             --restart always \
             --network="host" \
             --publish 4040:4040 \
-            $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
-
+            $(echo $REGISTRY)/$(echo $IMAGE_NAME_AUTH):$(echo $GITHUB_SHA | head -c7)
+            #####
+            ## APIGATEWAY
+            #####
+            # Stop running container
+            sudo docker stop $(echo $CONTAINER_NAME_APIGATEWAY)
+            # Remove old container
+            sudo docker rm $(echo $CONTAINER_NAME_APIGATEWAY)
+            # Run a new container from a new image
+            sudo docker pull $(echo $REGISTRY)/$(echo $IMAGE_NAME_APIGATEWAY):$(echo $GITHUB_SHA | head -c7)
+            # Run migration
+            sudo docker run -d --name $(echo $CONTAINER_NAME_APIGATEWAY) \
+            -v ~/configs/config.yaml:/root/configs/config.yaml \
+            --restart always \
+            --network="host" \
+            --publish 4041:4041 \
+            $(echo $REGISTRY)/$(echo $IMAGE_NAME_APIGATEWAY):$(echo $GITHUB_SHA | head -c7)
 

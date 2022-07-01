@@ -1,4 +1,5 @@
 /configs/config.yaml
 **/mocks
+*.pb.go
 /.vscode
 .DS_Store

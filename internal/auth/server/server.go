@@ -1,5 +1,7 @@
 package server
 
+////go:generate protoc --proto_path=../../../proto ../../../proto/auth/v1/*.proto --go_out=../delivery/grpc/v1 --go-grpc_out=../delivery/grpc/v1
+
 import (
 	"context"
 	"crypto/tls"
