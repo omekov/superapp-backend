@@ -23,12 +23,10 @@ init:
 	-go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@latest
 	-go install github.com/favadi/protoc-go-inject-tag@latest
 	-go install github.com/golang/mock/mockgen@latest
-	-go install github.com/matryer/moq@latest
 	-go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	go mod tidy
 	go mod vendor
 	make generate
-	go mod vendor
 
 generate: protobuf
 	find $(CWD)/pkg/proto -type f -name "mock.go" -delete
@@ -40,8 +38,11 @@ proto:
 clean:
 	rm -rf ./internal/auth/v1/proto/*.go
 
-mocksrepository:
+mocks-auth-user-repository:
 	mockgen -source=./internal/auth/user/repository/repository.go -destination=./internal/auth/user/repository/mocks/repository.go -package=mocksrepository
+
+mocks-auth-user-service:
+	mockgen -source=./internal/auth/user/service/service.go -destination=./internal/auth/user/service/mocks/service.go -package=mocksservice
 
 docker:
 	make local-db 

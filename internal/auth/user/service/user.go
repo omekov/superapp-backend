@@ -174,6 +174,7 @@ func (s *UserService) Refresh(ctx context.Context, refToken string) (domain.Toke
 	if err != nil {
 		return domain.Token{}, err
 	}
+
 	return domain.Token{
 		AccessToken:  token.AccessToken,
 		RefreshToken: token.Refreshtoken,
@@ -194,15 +195,15 @@ func (s *UserService) ForgetPassword(ctx context.Context, email string) error {
 		return err
 	}
 
-	pass := struct {
-		PassToken string
-		Username  string
-	}{
-		PassToken: token,
-		Username:  user.UserName,
-	}
-
 	go func() {
+		pass := struct {
+			PassToken string
+			Username  string
+		}{
+			PassToken: token,
+			Username:  user.UserName,
+		}
+
 		if err := s.mailer.Send(email, "forget_password.html", pass); err != nil {
 			s.logg.Error(err)
 			return
@@ -256,7 +257,10 @@ func (s *UserService) Activate(ctx context.Context, email, pinCode string) error
 	}
 
 	sanitizePinCode := "-"
-	s.userRepository.UpdateState(ctx, userData.ID, UserStateEnabled, sanitizePinCode)
+	err = s.userRepository.UpdateState(ctx, userData.ID, UserStateEnabled, sanitizePinCode)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

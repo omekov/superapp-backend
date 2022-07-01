@@ -4,9 +4,11 @@ on:
   push:
     branches:
     - main
+    - migrate
   pull_request:
     branches:
     - main
+    - migrate
 
 env:
   REGISTRY: "ghcr.io/omekov"
@@ -28,8 +30,15 @@ jobs:
       - name: Verify dependencies
         run: go mod verify
 
+      - name: Mocks generate files
+        run: |
+        go install github.com/golang/mock/mockgen@v1.6.0
+        make mocks-auth-user-repository
+        make mocks-auth-user-service
+
       - name: Run golang tests
         run: go test -v -cover -timeout 60s ./...
+      
   
   build_and_push:
     runs-on: ubuntu-latest
@@ -75,6 +84,7 @@ jobs:
             sudo docker rm $(echo $CONTAINER_NAME)
             # Run a new container from a new image
             sudo docker pull $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
+            # Run migration
             sudo docker run -d --name $(echo $CONTAINER_NAME) \
             -v ~/configs/config.yaml:/root/configs/config.yaml \
             -v /cert/cert.pem:/root/cert.pem \

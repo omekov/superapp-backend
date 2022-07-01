@@ -13,5 +13,6 @@ FROM alpine:latest
 
 WORKDIR /root/
 COPY --from=0 /github.com/omekov/superapp-backend/auth .
+COPY --from=0 /github.com/omekov/superapp-backend/migrations ./migrations
 
 CMD ["./auth"]
