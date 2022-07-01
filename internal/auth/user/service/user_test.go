@@ -8,7 +8,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/omekov/superapp-backend/internal/auth/domain"
 	"github.com/omekov/superapp-backend/internal/auth/user/repository"
-	mock_repository "github.com/omekov/superapp-backend/internal/auth/user/repository/mocks"
+	mocksrepository "github.com/omekov/superapp-backend/internal/auth/user/repository/mocks"
 	"github.com/omekov/superapp-backend/internal/auth/user/service"
 	"github.com/omekov/superapp-backend/pkg/jwt"
 	"github.com/omekov/superapp-backend/pkg/logger"
@@ -18,13 +18,13 @@ import (
 
 var errInternalServErr = errors.New("test: internal server error")
 
-func mockUserService(t *testing.T) (*service.UserService, *mock_repository.MockUserer) {
+func mockUserService(t *testing.T) (*service.UserService, *mocksrepository.MockUserer) {
 	t.Helper()
 
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 
-	userRepo := mock_repository.NewMockUserer(mockCtl)
+	userRepo := mocksrepository.NewMockUserer(mockCtl)
 	logg := logger.NewAPILogger("info")
 	logg.InitLogger()
 	jwt := jwt.New([]byte("access"), []byte("refresh"), []byte("mail"), 5, 15, 1440)

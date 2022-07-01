@@ -31,10 +31,7 @@ jobs:
         run: go mod verify
 
       - name: Mocks generate files
-        run: |
-        go install github.com/golang/mock/mockgen@v1.6.0
-        make mocks-auth-user-repository
-        make mocks-auth-user-service
+        run: go generate ./...
 
       - name: Run golang tests
         run: go test -v -cover -timeout 60s ./...

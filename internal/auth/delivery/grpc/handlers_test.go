@@ -1,5 +1,7 @@
 package grpc_test
 
+//go:generate mockgen -source=../../user/service/service.go -destination=../../user/service/mocks/service.go -package=mocksservice
+
 /*
 import (
 	"context"

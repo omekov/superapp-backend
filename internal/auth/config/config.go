@@ -94,7 +94,8 @@ type GRPC struct {
 
 // Migrate ...
 type Migrate struct {
-	MigrateAuthPath string `yaml:"migrateAuthPath"`
+	Onwork   bool   `yaml:"onwork"`
+	AuthPath string `yaml:"auth"`
 }
 
 // New ...

@@ -1,5 +1,7 @@
 package service_test
 
+//go:generate mockgen -source=../repository/repository.go -destination=../repository/mocks/repository.go -package=mocksrepository
+
 import (
 	"testing"
 

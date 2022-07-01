@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"net"
 	"os"
 	"os/signal"
@@ -47,8 +48,10 @@ func Run(port, cfgPath string) error {
 	connect := conn.New(logg)
 
 	dbx := connect.SQLXConn(ctx, cfgPath)
-	if err := goose.Up(dbx.DB, cfg.Migrate.MigrateAuthPath, goose.WithAllowMissing()); err != nil {
-		return err
+	if cfg.Migrate.Onwork {
+		if err := goose.Up(dbx.DB, cfg.Migrate.AuthPath, goose.WithAllowMissing()); err != nil {
+			return fmt.Errorf("migrate failed: %s", err.Error())
+		}
 	}
 
 	rdb := connect.RedisConn(ctx, cfgPath)

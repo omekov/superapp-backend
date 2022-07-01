@@ -38,6 +38,10 @@ proto:
 clean:
 	rm -rf ./internal/auth/v1/proto/*.go
 
+mocks:
+	- mocks-auth-user-repository
+	- mocks-auth-user-service
+
 mocks-auth-user-repository:
 	mockgen -source=./internal/auth/user/repository/repository.go -destination=./internal/auth/user/repository/mocks/repository.go -package=mocksrepository
 
