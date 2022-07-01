@@ -4,11 +4,9 @@ on:
   push:
     branches:
     - main
-    - migrate
   pull_request:
     branches:
     - main
-    - migrate
 
 env:
   REGISTRY: "ghcr.io/omekov"
@@ -31,7 +29,9 @@ jobs:
         run: go mod verify
 
       - name: Mocks generate files
-        run: go generate ./...
+        run: |
+          go install github.com/golang/mock/mockgen@v1.6.0
+          go generate ./...
 
       - name: Run golang tests
         run: go test -v -cover -timeout 60s ./...
