@@ -35,7 +35,7 @@ func Run(port, configPath string) error {
 	swaggerHandler := http.StripPrefix("/swagger/", http.FileServer(statikFS))
 	mux.Handle("/swagger/", swaggerHandler)
 
-	return http.ListenAndServe(":8081", mux)
+	return http.ListenAndServe(":4041", mux)
 
 	// conn, err := grpc.Dial(, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	// if err != nil {
