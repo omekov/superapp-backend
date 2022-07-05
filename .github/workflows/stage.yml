@@ -45,6 +45,7 @@ jobs:
           ./autogen.sh
           ./autogen.sh
           ./configure
+          cd ..
           make proto-auth
           make proto-apigateway
            
