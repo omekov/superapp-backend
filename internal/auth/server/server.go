@@ -1,7 +1,5 @@
 package server
 
-////go:generate protoc --proto_path=../../../proto ../../../proto/auth/v1/*.proto --go_out=../delivery/grpc/v1 --go-grpc_out=../delivery/grpc/v1
-
 import (
 	"context"
 	"crypto/tls"
@@ -17,7 +15,7 @@ import (
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/omekov/superapp-backend/internal/auth/config"
 	mygrpc "github.com/omekov/superapp-backend/internal/auth/delivery/grpc"
-	"github.com/omekov/superapp-backend/internal/auth/delivery/grpc/v1/proto"
+	proto "github.com/omekov/superapp-backend/internal/auth/delivery/grpc/v1"
 	"github.com/omekov/superapp-backend/internal/auth/interceptors"
 	"github.com/omekov/superapp-backend/internal/auth/user/repository"
 	"github.com/omekov/superapp-backend/internal/auth/user/service"

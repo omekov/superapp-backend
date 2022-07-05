@@ -1,11 +1,12 @@
 syntax = "proto3";
-option go_package = "./proto";
+option go_package = "github.com/omekov/superapp-backend/proto";
 import "google/protobuf/empty.proto";
-
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 package authservice;
 
 message User {
-    string ID = 1;
+    string ID = 1;  // @gotag: validate:"is-uuid"
     string username = 2;
     string password = 3;
     string email = 4;
@@ -54,11 +55,45 @@ message ForgetPasswordRequest {
 };
 
 service Auth {
-    rpc Login(AuthRequest) returns (AuthResponse);
-    rpc Register(UserRequest) returns (google.protobuf.Empty);
-    rpc GetMe(GetMeRequest) returns (GetMeResponse);
-    rpc Refresh(RefreshRequest) returns (AuthResponse);
-    rpc Activate(ActivateRequest) returns (google.protobuf.Empty);
-    rpc ResetPassword(ResetPasswordRequest) returns (google.protobuf.Empty);
-    rpc ForgetPassword(ForgetPasswordRequest) returns (google.protobuf.Empty);
+    rpc Login(AuthRequest) returns (AuthResponse) {
+        option (google.api.http) = {
+            post: "/v1/login"
+			body: "*"
+        };
+    };
+    rpc Register(UserRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/v1/register"
+			body: "*"
+        };
+    };
+    rpc GetMe(GetMeRequest) returns (GetMeResponse) {
+        option (google.api.http) = {
+            get: "/v1/me/{sessionID}"
+        };
+    };
+    rpc Refresh(RefreshRequest) returns (AuthResponse) {
+        option (google.api.http) = {
+            post: "/v1/refresh"
+			body: "*"
+        };
+    };
+    rpc Activate(ActivateRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/v1/activate"
+			body: "*"
+        };
+    };
+    rpc ResetPassword(ResetPasswordRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/v1/reset-password"
+			body: "*"
+        };
+    };
+    rpc ForgetPassword(ForgetPasswordRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/v1/forget-password"
+			body: "*"
+        };
+    };
 };

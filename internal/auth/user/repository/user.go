@@ -86,7 +86,7 @@ func (r *userRepo) GetByUsername(ctx context.Context, username string) (User, er
 	return user, nil
 }
 
-func (r *userRepo) GetByID(ctx context.Context, id uuid.UUID) (User, error) {
+func (r *userRepo) GetByID(ctx context.Context, id string) (User, error) {
 	const queryGetByID = `SELECT
 	id,
 	username,

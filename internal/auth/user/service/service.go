@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/omekov/superapp-backend/internal/auth/domain"
 	"github.com/omekov/superapp-backend/internal/auth/user/repository"
 	"github.com/omekov/superapp-backend/pkg/jwt"
@@ -24,7 +23,7 @@ func NewService(repository *repository.Repository, jwt *jwt.JWT, logg *logger.AP
 type UserServicier interface {
 	Register(ctx context.Context, user domain.User) error
 	Login(ctx context.Context, username, password string) (domain.Token, error)
-	GetMe(ctx context.Context, id uuid.UUID) (domain.User, error)
+	GetMe(ctx context.Context, id string) (domain.User, error)
 	Refresh(ctx context.Context, refToken string) (domain.Token, error)
 	ResetPassword(ctx context.Context, passToken, newPassword string) error
 	ForgetPassword(ctx context.Context, email string) error

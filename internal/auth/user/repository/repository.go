@@ -22,7 +22,7 @@ func NewRepository(rdb *redis.Client, db *sqlx.DB, log logger.Logger) *Repositor
 type Userer interface {
 	Create(ctx context.Context, user User) (uuid.UUID, error)
 	GetByUsername(ctx context.Context, username string) (User, error)
-	GetByID(ctx context.Context, id uuid.UUID) (User, error)
+	GetByID(ctx context.Context, id string) (User, error)
 	SetCacheUser(ctx context.Context, key string, seconds int, user *User) error
 	GetCacheByID(ctx context.Context, key string) (User, error)
 	DeleteCacheUser(ctx context.Context, key string) error

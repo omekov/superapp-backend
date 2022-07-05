@@ -1,9 +1,12 @@
 # See README.txt.
 
-.PHONY: run test init proto clean docker cover
+.PHONY: run-auth run-api test init proto clean docker cover proto-gw
 
-run:
+run-auth:
 	go run ./cmd/auth/*.go
+
+run-api:
+	go run ./cmd/apigateway/*.go
 
 test:
 	go test -v -cover -timeout 60s ./...
@@ -32,8 +35,21 @@ generate: protobuf
 	find $(CWD)/pkg/proto -type f -name "mock.go" -delete
 	go generate ./...
 
-proto:
-	protoc --proto_path=proto proto/auth/v1/*.proto --go_out=internal/auth/delivery/grpc/v1 --go-grpc_out=internal/auth/delivery/grpc/v1
+proto-auth:
+	rm -f internal/auth/delivery/grpc/v1/*.go
+	protoc --proto_path=proto/auth --go_out=internal/auth/delivery/grpc --go_opt=paths=source_relative \
+	--go-grpc_out=internal/auth/delivery/grpc  --go-grpc_opt=paths=source_relative \
+	--grpc-gateway_out=internal/auth/delivery/grpc --grpc-gateway_opt=paths=source_relative \
+	proto/auth/v1/*.proto
+
+proto-apigateway:
+	rm -f internal/apigateway/delivery/grpc/v1/*.go
+	protoc --proto_path=proto/apigateway --go_out=internal/apigateway/delivery/grpc --go_opt=paths=source_relative \
+	--go-grpc_out=internal/apigateway/delivery/grpc  --go-grpc_opt=paths=source_relative \
+	--grpc-gateway_out=internal/apigateway/delivery/grpc --grpc-gateway_opt=paths=source_relative \
+	--openapiv2_out=doc/swagger --openapiv2_opt=allow_merge=true,merge_file_name=apigateway \
+	proto/apigateway/v1/*.proto 
+	statik -src=./doc/swagger -dest=./doc
 
 clean:
 	rm -rf ./internal/auth/v1/proto/*.go
@@ -51,7 +67,6 @@ mocks-auth-user-service:
 docker:
 	make local-db 
 	make local-rdb
-	make goose-auth
 
 local-db:
 	-docker kill superapp_postgres

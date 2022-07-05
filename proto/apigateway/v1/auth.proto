@@ -1,0 +1,139 @@
+syntax = "proto3";
+option go_package = "github.com/omekov/superapp-backend/proto";
+import "google/protobuf/empty.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+package authservice;
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+	info: {
+		title: "Super App Backend API";
+		version: "1.0";
+		contact: {
+			name: "SuperApp for azamat.dev";
+			url: "https://github.com/omekov";
+			email: "umekovazamat@gmail.com";
+		};
+	};
+};
+
+message User {
+    string ID = 1;  // @gotag: validate:"is-uuid"
+    string username = 2;
+    string password = 3;
+    string email = 4;
+}
+
+message AuthRequest {
+    string username = 1;
+    string password = 2;
+};
+
+message AuthResponse {
+    string accessToken = 1;
+    string refreshToken = 2;
+};
+
+message GetMeRequest {
+   string sessionID = 1;
+};
+
+message GetMeResponse {
+    User user = 1;
+};
+
+message UserRequest {
+    string username = 1;
+    string password = 2;
+    string email = 3;
+};
+
+message RefreshRequest {
+    string refreshToken = 1;
+};
+
+message ActivateRequest {
+    string email = 1;
+    string pinCode = 2;
+};
+
+message ResetPasswordRequest {
+    string passToken = 1;
+    string newPassword = 2;
+};
+
+message ForgetPasswordRequest {
+    string email = 1;
+};
+
+service Auth {
+    rpc Login(AuthRequest) returns (AuthResponse) {
+        option (google.api.http) = {
+            post: "/v1/login"
+			body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			description: "Authention and Authorization for user; Service auth-server";
+			summary: "Sign in for super App";
+        };
+    };
+    rpc Register(UserRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/v1/register"
+			body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			description: "Creating for user; Service auth-server";
+			summary: "Sign up for super App";
+        };
+    };
+    rpc GetMe(GetMeRequest) returns (GetMeResponse) {
+        option (google.api.http) = {
+            get: "/v1/me/{sessionID}"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			description: "user data by sessionID; Service auth-server";
+			summary: "get User by SessionID";
+        };
+    };
+    rpc Refresh(RefreshRequest) returns (AuthResponse) {
+        option (google.api.http) = {
+            post: "/v1/refresh"
+			body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			description: "Если access token истечет можно обновить через этот метод";
+			summary: "refresh token";
+        };
+    };
+    rpc Activate(ActivateRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/v1/activate"
+			body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			description: "После регистраций нужно актиривать пользователя";
+			summary: "activate user";
+        };
+    };
+    rpc ResetPassword(ResetPasswordRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/v1/reset-password"
+			body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			description: "Через почту получаем токен и пароль и обновляем";
+			summary: "reset password by email";
+        };
+    };
+    rpc ForgetPassword(ForgetPasswordRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/v1/forget-password"
+			body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			description: "Отправляем запрос на почту пользователя на сброс пароля";
+			summary: "reset password by email";
+        };
+    };
+};

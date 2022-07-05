@@ -8,8 +8,7 @@ import (
 
 	"github.com/go-ozzo/ozzo-validation/is"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/google/uuid"
-	"github.com/omekov/superapp-backend/internal/auth/delivery/grpc/v1/proto"
+	proto "github.com/omekov/superapp-backend/internal/auth/delivery/grpc/v1"
 	"github.com/omekov/superapp-backend/internal/auth/domain"
 	"github.com/omekov/superapp-backend/internal/auth/user/service"
 	"github.com/omekov/superapp-backend/pkg/logger"
@@ -63,17 +62,18 @@ func (s *Server) Login(ctx context.Context, in *proto.AuthRequest) (*proto.AuthR
 
 // GetMe ...
 func (s *Server) GetMe(ctx context.Context, in *proto.GetMeRequest) (*proto.GetMeResponse, error) {
+	user, err := s.Service.User.GetMe(ctx, in.GetSessionID())
 	return &proto.GetMeResponse{
 		User: &proto.User{
-			ID:       uuid.New().String(),
-			Username: "",
+			ID:       user.ID.String(),
+			Username: user.Username,
+			Email:    user.Email,
 		},
-	}, nil
+	}, err
 }
 
 // Register ...
 func (s *Server) Register(ctx context.Context, in *proto.UserRequest) (*emptypb.Empty, error) {
-
 	username := strings.ToLower(in.GetUsername())
 	err := validation.Validate(username,
 		validation.Required,

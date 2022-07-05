@@ -24,10 +24,20 @@ type JWT struct {
 	PasswordCoast   int
 }
 
+type JSONWebTokener interface {
+	PasswordsMatch(hashedPassword string, password string) error
+	Hash(password string) (string, error)
+	GetClaimsAccess(access string) (*Claims, error)
+	GetClaimsRefresh(refresh string) (*Claims, error)
+	NewToken(sessionID string) (Token, error)
+	NewMailToken(email string) (string, error)
+	GetClaimsMail(token string) (*Claims, error)
+}
+
 // Token ...
 type Token struct {
 	AccessToken  string `json:"accessToken"`
-	Refreshtoken string `json:"refreshToken"`
+	RefreshToken string `json:"refreshToken"`
 }
 
 // Claims ...
@@ -136,7 +146,7 @@ func (jwt *JWT) NewToken(sessionID string) (Token, error) {
 		return token, err
 	}
 
-	token.Refreshtoken, err = jwt.newRefresh(sessionID)
+	token.RefreshToken, err = jwt.newRefresh(sessionID)
 	if err != nil {
 		return token, err
 	}

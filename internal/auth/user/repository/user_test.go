@@ -166,7 +166,7 @@ func TestUser_GetByID(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			user, err := tc.repo.User.GetByID(ctx, tc.payload.ID)
+			user, err := tc.repo.User.GetByID(ctx, tc.payload.ID.String())
 			if err != nil {
 				if tc.wantErr {
 					require.Equal(t, err, tc.err)
@@ -297,7 +297,7 @@ func TestUser_UpdatePassword(t *testing.T) {
 				}
 			}
 
-			user, err := tc.repo.User.GetByID(ctx, tc.payload.ID)
+			user, err := tc.repo.User.GetByID(ctx, tc.payload.ID.String())
 			if err != nil {
 				require.Error(t, err)
 			} else {

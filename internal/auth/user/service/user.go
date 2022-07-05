@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/omekov/superapp-backend/internal/auth/domain"
@@ -18,7 +17,7 @@ import (
 
 type UserService struct {
 	userRepository repository.Userer
-	jwt            *jwt.JWT
+	jwt            jwt.JSONWebTokener
 	logg           *logger.APILogger
 	mailer         mailer.Mailer
 }
@@ -39,7 +38,7 @@ var (
 // google apple yandex
 func NewUserService(
 	repository repository.Userer,
-	jwt *jwt.JWT,
+	jwt jwt.JSONWebTokener,
 	logg *logger.APILogger,
 	mailer mailer.Mailer,
 ) *UserService {
@@ -61,13 +60,15 @@ func (s *UserService) Login(ctx context.Context, username, password string) (dom
 		return domain.Token{}, err
 	}
 
-	sessionID, err := s.userRepository.CreateSession(ctx, &repository.Session{
+	newSession := &repository.Session{
 		UserID: userData.ID,
-	}, 0)
+	}
+	sessionID, err := s.userRepository.CreateSession(ctx, newSession, 0)
 	if err != nil {
 		return domain.Token{}, err
 	}
 
+	userData.Password = ""
 	err = s.userRepository.SetCacheUser(ctx, userData.ID.String(), 0, &userData)
 	if err != nil {
 		return domain.Token{}, err
@@ -80,43 +81,43 @@ func (s *UserService) Login(ctx context.Context, username, password string) (dom
 
 	return domain.Token{
 		AccessToken:  token.AccessToken,
-		RefreshToken: token.Refreshtoken,
+		RefreshToken: token.RefreshToken,
 	}, nil
 }
 
-func (s *UserService) GetMe(ctx context.Context, id uuid.UUID) (domain.User, error) {
-	user, err := s.userRepository.GetCacheByID(ctx, id.String())
+func (s *UserService) GetMe(ctx context.Context, id string) (domain.User, error) {
+	user, err := s.userRepository.GetCacheByID(ctx, id)
 	if errors.Is(err, grpc_errors.ErrNotFound) {
 		user, err = s.userRepository.GetByID(ctx, id)
 		if err != nil {
-			return domain.User{}, fmt.Errorf("GetByID: %v", err)
+			return domain.User{}, err
 		}
 
 		err = s.userRepository.SetCacheUser(ctx, user.ID.String(), 0, &user)
 		if err != nil {
-			return domain.User{}, fmt.Errorf("SetCacheUser: %v", err)
+			return domain.User{}, err
 		}
 		err = nil
 	}
 
 	if err != nil {
-		return domain.User{}, fmt.Errorf("GetCacheByID: %v", err)
+		return domain.User{}, err
 	}
 
 	return domain.User{
 		ID:       user.ID,
 		Username: user.UserName,
-		Password: user.Password,
+		Email:    user.Email,
 	}, nil
 }
 
-// Отправка на почту код активацию
 func (s *UserService) Register(ctx context.Context, user domain.User) error {
 
 	userData, err := s.userRepository.GetByEmail(ctx, user.Email)
 	if err != nil {
 		return err
 	}
+
 	if userData.Email == user.Email {
 		return ErrUserAlreadyExits
 	}
@@ -177,7 +178,7 @@ func (s *UserService) Refresh(ctx context.Context, refToken string) (domain.Toke
 
 	return domain.Token{
 		AccessToken:  token.AccessToken,
-		RefreshToken: token.Refreshtoken,
+		RefreshToken: token.RefreshToken,
 	}, nil
 }
 
