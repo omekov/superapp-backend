@@ -30,25 +30,6 @@ jobs:
       - name: Verify dependencies
         run: go mod verify
 
-      - name: Build protobuf library
-        if: steps.cache-protobuf.outputs.cache-hit != 'true'
-        run: |
-          go install \
-          github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway \
-          github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2 \
-          google.golang.org/protobuf/cmd/protoc-gen-go \
-          google.golang.org/grpc/cmd/protoc-gen-go-grpc
-          go install github.com/rakyll/statik@latest
-          git clone https://github.com/protocolbuffers/protobuf.git
-          cd protobuf
-          git submodule update --init --recursive
-          ./autogen.sh
-          ./autogen.sh
-          ./configure
-          cd ..
-          make proto-auth
-          make proto-apigateway
-           
       - name: Mocks generate files
         run: |
           go install github.com/golang/mock/mockgen@v1.6.0
