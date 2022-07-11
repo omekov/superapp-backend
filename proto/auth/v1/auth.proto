@@ -5,6 +5,35 @@ import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 package authservice;
 
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+	info: {
+		title: "Super App Backend API";
+		version: "1.0";
+		contact: {
+			name: "SuperApp for azamat.dev";
+			url: "https://github.com/omekov";
+			email: "umekovazamat@gmail.com";
+		};
+	};
+    security_definitions: {
+		security: {
+            key: "bearer"
+            value: {
+              type: TYPE_API_KEY
+              in: IN_HEADER
+              name: "Authorization"
+              description: "Authentication token, prefixed by Bearer: Bearer <token>"
+            }
+		}
+	};
+    security: {
+        security_requirement: {
+          key: "bearer"
+        }
+      }
+};
+
+
 message User {
     string ID = 1;  // @gotag: validate:"is-uuid"
     string username = 2;
@@ -20,10 +49,6 @@ message AuthRequest {
 message AuthResponse {
     string accessToken = 1;
     string refreshToken = 2;
-};
-
-message GetMeRequest {
-   string sessionID = 1;
 };
 
 message GetMeResponse {
@@ -60,16 +85,30 @@ service Auth {
             post: "/v1/login"
 			body: "*"
         };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			description: "Authention and Authorization for user; Service auth-server";
+			summary: "Sign in for super App";
+            security: { } // Disable security key
+
+        };
     };
     rpc Register(UserRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/v1/register"
 			body: "*"
         };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			description: "Creating for user; Service auth-server";
+			summary: "Sign up for super App";
+        };
     };
-    rpc GetMe(GetMeRequest) returns (GetMeResponse) {
+    rpc GetMe(google.protobuf.Empty) returns (GetMeResponse) {
         option (google.api.http) = {
-            get: "/v1/me/{sessionID}"
+            get: "/v1/me"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			description: "user data by sessionID; Service auth-server";
+			summary: "get User by SessionID";
         };
     };
     rpc Refresh(RefreshRequest) returns (AuthResponse) {
@@ -77,23 +116,39 @@ service Auth {
             post: "/v1/refresh"
 			body: "*"
         };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			description: "Если access token истечет можно обновить через этот метод";
+			summary: "refresh token";
+        };
     };
     rpc Activate(ActivateRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
-            post: "/v1/activate"
+            put: "/v1/activate"
 			body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			description: "После регистраций нужно актиривать пользователя";
+			summary: "activate user";
         };
     };
     rpc ResetPassword(ResetPasswordRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
-            post: "/v1/reset-password"
+            put: "/v1/reset-password"
 			body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			description: "Через почту получаем токен и пароль и обновляем";
+			summary: "reset password by email";
         };
     };
     rpc ForgetPassword(ForgetPasswordRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
             post: "/v1/forget-password"
 			body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			description: "Отправляем запрос на почту пользователя на сброс пароля";
+			summary: "reset password by email";
         };
     };
 };

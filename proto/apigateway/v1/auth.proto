@@ -15,7 +15,24 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
 			email: "umekovazamat@gmail.com";
 		};
 	};
+    security_definitions: {
+		security: {
+            key: "bearer"
+            value: {
+              type: TYPE_API_KEY
+              in: IN_HEADER
+              name: "Authorization"
+              description: "Authentication token, prefixed by Bearer: Bearer <token>"
+            }
+		}
+	};
+    security: {
+        security_requirement: {
+          key: "bearer"
+        }
+      }
 };
+
 
 message User {
     string ID = 1;  // @gotag: validate:"is-uuid"
@@ -32,10 +49,6 @@ message AuthRequest {
 message AuthResponse {
     string accessToken = 1;
     string refreshToken = 2;
-};
-
-message GetMeRequest {
-   string sessionID = 1;
 };
 
 message GetMeResponse {
@@ -75,6 +88,8 @@ service Auth {
         option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
 			description: "Authention and Authorization for user; Service auth-server";
 			summary: "Sign in for super App";
+            security: { } // Disable security key
+
         };
     };
     rpc Register(UserRequest) returns (google.protobuf.Empty) {
@@ -87,9 +102,9 @@ service Auth {
 			summary: "Sign up for super App";
         };
     };
-    rpc GetMe(GetMeRequest) returns (GetMeResponse) {
+    rpc GetMe(google.protobuf.Empty) returns (GetMeResponse) {
         option (google.api.http) = {
-            get: "/v1/me/{sessionID}"
+            get: "/v1/me"
         };
         option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
 			description: "user data by sessionID; Service auth-server";
@@ -108,7 +123,7 @@ service Auth {
     };
     rpc Activate(ActivateRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
-            post: "/v1/activate"
+            put: "/v1/activate"
 			body: "*"
         };
         option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
@@ -118,7 +133,7 @@ service Auth {
     };
     rpc ResetPassword(ResetPasswordRequest) returns (google.protobuf.Empty) {
         option (google.api.http) = {
-            post: "/v1/reset-password"
+            put: "/v1/reset-password"
 			body: "*"
         };
         option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {

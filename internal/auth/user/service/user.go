@@ -69,7 +69,7 @@ func (s *UserService) Login(ctx context.Context, username, password string) (dom
 	}
 
 	userData.Password = ""
-	err = s.userRepository.SetCacheUser(ctx, userData.ID.String(), 0, &userData)
+	err = s.userRepository.SetCacheUser(ctx, sessionID, 0, &userData)
 	if err != nil {
 		return domain.Token{}, err
 	}
@@ -85,10 +85,10 @@ func (s *UserService) Login(ctx context.Context, username, password string) (dom
 	}, nil
 }
 
-func (s *UserService) GetMe(ctx context.Context, id string) (domain.User, error) {
-	user, err := s.userRepository.GetCacheByID(ctx, id)
+func (s *UserService) GetMe(ctx context.Context, sessionID string) (domain.User, error) {
+	user, err := s.userRepository.GetCacheByID(ctx, sessionID)
 	if errors.Is(err, grpc_errors.ErrNotFound) {
-		user, err = s.userRepository.GetByID(ctx, id)
+		user, err = s.userRepository.GetByID(ctx, sessionID)
 		if err != nil {
 			return domain.User{}, err
 		}
@@ -114,6 +114,9 @@ func (s *UserService) GetMe(ctx context.Context, id string) (domain.User, error)
 func (s *UserService) Register(ctx context.Context, user domain.User) error {
 
 	userData, err := s.userRepository.GetByEmail(ctx, user.Email)
+	if errors.Is(err, sql.ErrNoRows) {
+		err = nil
+	}
 	if err != nil {
 		return err
 	}
@@ -123,6 +126,9 @@ func (s *UserService) Register(ctx context.Context, user domain.User) error {
 	}
 
 	userData, err = s.userRepository.GetByUsername(ctx, user.Username)
+	if errors.Is(err, sql.ErrNoRows) {
+		err = nil
+	}
 	if err != nil {
 		return err
 	}
@@ -136,16 +142,21 @@ func (s *UserService) Register(ctx context.Context, user domain.User) error {
 		return err
 	}
 
-	pinCode := util.GenPinCode(6)
+	pinCode := "123456"
+	if user.ID.String() == "" {
+		user.ID = uuid.New()
+		pinCode = util.GenPinCode(6)
+	}
 
 	repoUser := repository.User{
-		ID:       uuid.New(),
+		ID:       user.ID,
 		UserName: user.Username,
 		Password: password,
 		Email:    user.Email,
 		State:    UserStateNotActivated,
 		PinCode:  pinCode,
 	}
+
 	_, err = s.userRepository.Create(ctx, repoUser)
 	if err != nil {
 		return err
@@ -264,4 +275,9 @@ func (s *UserService) Activate(ctx context.Context, email, pinCode string) error
 	}
 
 	return nil
+}
+
+func (s *UserService) VerifyToken(ctx context.Context, accessToken string) (string, error) {
+	claims, err := s.jwt.GetClaimsAccess(accessToken)
+	return claims.SessionID, err
 }

@@ -42,7 +42,7 @@ func TestUser_Login(t *testing.T) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
-
+	userID := uuid.New()
 	testCases := []struct {
 		name         string
 		wantErr      bool
@@ -55,18 +55,19 @@ func TestUser_Login(t *testing.T) {
 			false,
 			func(r *mocksrepository.MockUserer, mjwt *mocksjwt.MockJSONWebTokener, username, password string) {
 				user := repository.User{
+					ID:       userID,
 					UserName: "superadmin",
 					Password: "$2a$10$TZ5YyQBfHG9t4vG5dhFXreWXx7kGMUy.k.PS11bmAyx6.xySpcwgq",
 					State:    service.UserStateEnabled,
 				}
-				sessioID := uuid.New()
+				sessioID := "be1f0c2b-c29e-4ba9-a2d3-439fb085992e"
 				token := jwt.Token{AccessToken: "token", RefreshToken: "token"}
 				r.EXPECT().GetByUsername(ctx, username).Return(user, nil)
 				mjwt.EXPECT().PasswordsMatch(user.Password, "password").Return(nil)
-				r.EXPECT().CreateSession(ctx, &repository.Session{UserID: user.ID}, 0).Return(sessioID.String(), nil)
+				r.EXPECT().CreateSession(ctx, &repository.Session{UserID: user.ID}, 0).Return(sessioID, nil)
 				user.Password = ""
-				r.EXPECT().SetCacheUser(ctx, user.ID.String(), 0, &user).Return(nil)
-				mjwt.EXPECT().NewToken(sessioID.String()).Return(token, nil)
+				r.EXPECT().SetCacheUser(ctx, sessioID, 0, &user).Return(nil)
+				mjwt.EXPECT().NewToken(sessioID).Return(token, nil)
 			},
 			domain.User{
 				Username: "superadmin",
@@ -150,12 +151,13 @@ func TestUser_Login(t *testing.T) {
 					Password: "$2a$10$TZ5YyQBfHG9t4vG5dhFXreWXx7kGMUy.k.PS11bmAyx6.xySpcwgq",
 					State:    service.UserStateEnabled,
 				}
-				sessioID := uuid.New()
+				sessionID := "be1f0c2b-c29e-4ba9-a2d3-439fb085992e"
+
 				r.EXPECT().GetByUsername(ctx, username).Return(user, nil)
 				mjwt.EXPECT().PasswordsMatch(user.Password, "password").Return(nil)
-				r.EXPECT().CreateSession(ctx, &repository.Session{UserID: user.ID}, 0).Return(sessioID.String(), nil)
+				r.EXPECT().CreateSession(ctx, &repository.Session{UserID: user.ID}, 0).Return(sessionID, nil)
 				user.Password = ""
-				r.EXPECT().SetCacheUser(ctx, user.ID.String(), 0, &user).Return(redis.ErrClosed)
+				r.EXPECT().SetCacheUser(ctx, sessionID, 0, &user).Return(redis.ErrClosed)
 
 			},
 			domain.User{
@@ -173,13 +175,14 @@ func TestUser_Login(t *testing.T) {
 					Password: "$2a$10$TZ5YyQBfHG9t4vG5dhFXreWXx7kGMUy.k.PS11bmAyx6.xySpcwgq",
 					State:    service.UserStateEnabled,
 				}
-				sessioID := uuid.New()
+				sessionID := "be1f0c2b-c29e-4ba9-a2d3-439fb085992e"
+
 				r.EXPECT().GetByUsername(ctx, username).Return(user, nil)
 				mjwt.EXPECT().PasswordsMatch(user.Password, "password").Return(nil)
-				r.EXPECT().CreateSession(ctx, &repository.Session{UserID: user.ID}, 0).Return(sessioID.String(), nil)
+				r.EXPECT().CreateSession(ctx, &repository.Session{UserID: user.ID}, 0).Return(sessionID, nil)
 				user.Password = ""
-				r.EXPECT().SetCacheUser(ctx, user.ID.String(), 0, &user).Return(nil)
-				mjwt.EXPECT().NewToken(sessioID.String()).Return(jwt.Token{}, jwt.ErrInvalidAccessToken)
+				r.EXPECT().SetCacheUser(ctx, sessionID, 0, &user).Return(nil)
+				mjwt.EXPECT().NewToken(sessionID).Return(jwt.Token{}, jwt.ErrInvalidAccessToken)
 			},
 			domain.User{
 				Username: "superadmin",
@@ -256,6 +259,55 @@ func TestUser_GetMe(t *testing.T) {
 			},
 			nil,
 		},
+		{
+			"invalid user not found",
+			false,
+			func(r *mocksrepository.MockUserer, mjwt *mocksjwt.MockJSONWebTokener, userID uuid.UUID) {
+				user := repository.User{
+					ID:       userID,
+					UserName: "superadmin",
+					Password: "$2a$10$TZ5YyQBfHG9t4vG5dhFXreWXx7kGMUy.k.PS11bmAyx6.xySpcwgq",
+					Email:    "superadmin@mail.kz",
+				}
+				r.EXPECT().GetCacheByID(ctx, userID.String()).Return(repository.User{}, grpc_errors.ErrNotFound)
+				r.EXPECT().GetByID(ctx, userID.String()).Return(user, sql.ErrNoRows)
+			},
+			args{
+				id: userID,
+			},
+			sql.ErrNoRows,
+		},
+		{
+			"invalid set cache user",
+			false,
+			func(r *mocksrepository.MockUserer, mjwt *mocksjwt.MockJSONWebTokener, userID uuid.UUID) {
+				user := repository.User{
+					ID:       userID,
+					UserName: "superadmin",
+					Password: "$2a$10$TZ5YyQBfHG9t4vG5dhFXreWXx7kGMUy.k.PS11bmAyx6.xySpcwgq",
+					Email:    "superadmin@mail.kz",
+				}
+				r.EXPECT().GetCacheByID(ctx, userID.String()).Return(repository.User{}, grpc_errors.ErrNotFound)
+				r.EXPECT().GetByID(ctx, userID.String()).Return(user, nil)
+				r.EXPECT().SetCacheUser(ctx, userID.String(), 0, &user).Return(redis.ErrClosed)
+
+			},
+			args{
+				id: userID,
+			},
+			redis.ErrClosed,
+		},
+		{
+			"invalid get cache by id",
+			false,
+			func(r *mocksrepository.MockUserer, mjwt *mocksjwt.MockJSONWebTokener, userID uuid.UUID) {
+				r.EXPECT().GetCacheByID(ctx, userID.String()).Return(repository.User{}, redis.ErrClosed)
+			},
+			args{
+				id: userID,
+			},
+			redis.ErrClosed,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -271,6 +323,86 @@ func TestUser_GetMe(t *testing.T) {
 					Email:    "superadmin@mail.kz",
 				}
 				require.Equal(t, user, u)
+			}
+		})
+	}
+}
+
+func TestRegister(t *testing.T) {
+	userService, userRepo, mockJWT := mockUserService(t)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+
+	type args struct {
+		user domain.User
+	}
+	userID := uuid.New()
+	testCases := []struct {
+		name         string
+		wantErr      bool
+		mockBehavior func(r *mocksrepository.MockUserer, jwt *mocksjwt.MockJSONWebTokener, user domain.User)
+		args         args
+		err          error
+	}{
+		{
+			"valid",
+			false,
+			func(r *mocksrepository.MockUserer, mjwt *mocksjwt.MockJSONWebTokener, user domain.User) {
+				passwordHash := "$2a$10$TZ5YyQBfHG9t4vG5dhFXreWXx7kGMUy.k.PS11bmAyx6.xySpcwgq"
+				repoUser := repository.User{
+					ID:       user.ID,
+					UserName: user.Username,
+					Password: passwordHash,
+					Email:    user.Email,
+					State:    service.UserStateNotActivated,
+					PinCode:  "123456",
+				}
+				r.EXPECT().GetByEmail(ctx, user.Email).Return(repository.User{}, nil)
+				r.EXPECT().GetByUsername(ctx, user.Username).Return(repository.User{}, nil)
+				mjwt.EXPECT().Hash(user.Password).Return(passwordHash, nil)
+				r.EXPECT().Create(ctx, repoUser).Return(uuid.Nil, nil)
+			},
+			args{
+				user: domain.User{
+					ID:       userID,
+					Username: "superadmin2",
+					Password: "password",
+					Email:    "superadmin2@mail.kz",
+				},
+			},
+			nil,
+		},
+		{
+			"invalid user is already exits",
+			false,
+			func(r *mocksrepository.MockUserer, mjwt *mocksjwt.MockJSONWebTokener, user domain.User) {
+				userData := repository.User{
+					ID:       userID,
+					UserName: "superadmin",
+					Password: "$2a$10$TZ5YyQBfHG9t4vG5dhFXreWXx7kGMUy.k.PS11bmAyx6.xySpcwgq",
+					Email:    "superadmin@mail.kz",
+				}
+				r.EXPECT().GetByEmail(ctx, user.Email).Return(userData, nil)
+			},
+			args{
+				user: domain.User{
+					ID:       userID,
+					Username: "superadmin",
+					Password: "$2a$10$TZ5YyQBfHG9t4vG5dhFXreWXx7kGMUy.k.PS11bmAyx6.xySpcwgq",
+					Email:    "superadmin@mail.kz",
+				},
+			},
+			service.ErrUserAlreadyExits,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.mockBehavior(userRepo, mockJWT, tc.args.user)
+			err := userService.Register(ctx, tc.args.user)
+			if err != nil {
+				require.Equal(t, err, tc.err)
 			}
 		})
 	}

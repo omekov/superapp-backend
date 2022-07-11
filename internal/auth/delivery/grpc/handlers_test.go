@@ -11,7 +11,7 @@ import (
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	. "github.com/omekov/superapp-backend/internal/auth/delivery/grpc"
-	"github.com/omekov/superapp-backend/internal/auth/delivery/grpc/v1/proto"
+	proto "github.com/omekov/superapp-backend/internal/auth/delivery/grpc/v1"
 	"github.com/stretchr/testify/require"
 	gogrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -81,8 +81,8 @@ func TestAuthServer_Login(t *testing.T) {
 					}
 				}
 			}
-
 		})
 	}
 }
+
 */

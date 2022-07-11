@@ -23,9 +23,10 @@ func NewService(repository *repository.Repository, jwt *jwt.JWT, logg *logger.AP
 type UserServicier interface {
 	Register(ctx context.Context, user domain.User) error
 	Login(ctx context.Context, username, password string) (domain.Token, error)
-	GetMe(ctx context.Context, id string) (domain.User, error)
+	GetMe(ctx context.Context, sessionID string) (domain.User, error)
 	Refresh(ctx context.Context, refToken string) (domain.Token, error)
 	ResetPassword(ctx context.Context, passToken, newPassword string) error
 	ForgetPassword(ctx context.Context, email string) error
 	Activate(ctx context.Context, email, pinCode string) error
+	VerifyToken(ctx context.Context, accessToken string) (string, error)
 }

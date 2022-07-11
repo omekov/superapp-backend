@@ -10,7 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	grpcrecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/omekov/superapp-backend/internal/auth/config"
@@ -63,7 +65,16 @@ func Run(port, cfgPath string) error {
 	mail := mailer.New(cfg.Mailer)
 
 	serv := service.NewService(repo, jwt, logg, mail)
-	im := interceptors.NewInterceptorManager(logg)
+	noVerifyMethodMap := map[string]bool{
+		"/authservice.Auth/Login":          true,
+		"/authservice.Auth/Register":       true,
+		"/authservice.Auth/GetMe":          false,
+		"/authservice.Auth/Refresh":        true,
+		"/authservice.Auth/Activate":       true,
+		"/authservice.Auth/ResetPassword":  true,
+		"/authservice.Auth/ForgetPassword": true,
+	}
+	im := interceptors.NewInterceptorManager(logg, serv, noVerifyMethodMap)
 
 	opts := []grpc.ServerOption{
 		grpc.KeepaliveParams(keepalive.ServerParameters{
@@ -72,10 +83,18 @@ func Run(port, cfgPath string) error {
 			MaxConnectionAge:  cfg.GRPC.MaxConnectionAge * time.Minute,
 			Time:              cfg.GRPC.Time * time.Minute,
 		}),
-		grpc.UnaryInterceptor(im.Logger),
+		grpc.UnaryInterceptor(
+			grpc_middleware.ChainUnaryServer(
+				grpc_auth.UnaryServerInterceptor(im.AuthFunc),
+			)),
+		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
+			grpc_ctxtags.StreamServerInterceptor(),
+			grpc_auth.StreamServerInterceptor(im.AuthFunc),
+			grpc_recovery.StreamServerInterceptor(),
+		)),
 		grpc.ChainUnaryInterceptor(
 			grpc_ctxtags.UnaryServerInterceptor(),
-			grpcrecovery.UnaryServerInterceptor(),
+			grpc_recovery.UnaryServerInterceptor(),
 		),
 	}
 

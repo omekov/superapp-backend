@@ -12,9 +12,9 @@ import (
 	grpcrecovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	_ "github.com/jackc/pgx/v4/stdlib" // ignore
-	"github.com/omekov/superapp-backend/internal/auth/interceptors"
 	carrepository "github.com/omekov/superapp-backend/internal/salecar/car/repository"
 	"github.com/omekov/superapp-backend/internal/salecar/car/service"
+	"github.com/omekov/superapp-backend/internal/salecar/interceptors"
 	"github.com/omekov/superapp-backend/pkg/conn"
 	"github.com/omekov/superapp-backend/pkg/logger"
 	"github.com/pressly/goose/v3"
@@ -39,8 +39,8 @@ func Run() error {
 	}
 
 	carrepository := carrepository.NewCarRepository(dbx)
-	_ = service.NewService(carrepository)
-	im := interceptors.NewInterceptorManager(logging)
+	carService := service.NewService(carrepository)
+	im := interceptors.NewInterceptorManager(logging, carService)
 
 	grpcServer := grpc.NewServer(grpc.KeepaliveParams(keepalive.ServerParameters{
 		MaxConnectionIdle: 5 * time.Minute,

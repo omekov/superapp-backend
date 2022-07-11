@@ -22,7 +22,7 @@
   ],
   "paths": {
     "/v1/activate": {
-      "post": {
+      "put": {
         "summary": "activate user",
         "description": "После регистраций нужно актиривать пользователя",
         "operationId": "Auth_Activate",
@@ -30,7 +30,6 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "type": "object",
               "properties": {}
             }
           },
@@ -65,7 +64,6 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "type": "object",
               "properties": {}
             }
           },
@@ -122,10 +120,11 @@
         ],
         "tags": [
           "Auth"
-        ]
+        ],
+        "security": []
       }
     },
-    "/v1/me/{sessionID}": {
+    "/v1/me": {
       "get": {
         "summary": "get User by SessionID",
         "description": "user data by sessionID; Service auth-server",
@@ -144,14 +143,6 @@
             }
           }
         },
-        "parameters": [
-          {
-            "name": "sessionID",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
         "tags": [
           "Auth"
         ]
@@ -200,7 +191,6 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "type": "object",
               "properties": {}
             }
           },
@@ -227,7 +217,7 @@
       }
     },
     "/v1/reset-password": {
-      "post": {
+      "put": {
         "summary": "reset password by email",
         "description": "Через почту получаем токен и пароль и обновляем",
         "operationId": "Auth_ResetPassword",
@@ -235,7 +225,6 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "type": "object",
               "properties": {}
             }
           },
@@ -389,5 +378,18 @@
         }
       }
     }
-  }
+  },
+  "securityDefinitions": {
+    "bearer": {
+      "type": "apiKey",
+      "description": "Authentication token, prefixed by Bearer: Bearer \u003ctoken\u003e",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "bearer": []
+    }
+  ]
 }

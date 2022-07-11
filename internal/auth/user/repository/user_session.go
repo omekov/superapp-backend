@@ -19,12 +19,14 @@ func (r *userRepo) SetCacheUser(ctx context.Context, key string, seconds int, us
 	if r.rdb == nil {
 		return ErrNotConnection
 	}
+
 	userBytes, err := json.Marshal(user)
 	if err != nil {
 		return err
 	}
 
-	return r.rdb.Set(ctx, fmt.Sprintf("%s:%s", userKey, key), userBytes, time.Second*time.Duration(seconds)).Err()
+	redisKey := fmt.Sprintf("%s:%s", userKey, key)
+	return r.rdb.Set(ctx, redisKey, userBytes, time.Second*time.Duration(seconds)).Err()
 }
 
 func (r *userRepo) GetCacheByID(ctx context.Context, key string) (User, error) {
@@ -36,7 +38,8 @@ func (r *userRepo) GetCacheByID(ctx context.Context, key string) (User, error) {
 		return user, ErrNotConnection
 	}
 
-	userBytes, err := r.rdb.Get(ctx, fmt.Sprintf("%s:%s", userKey, key)).Bytes()
+	redisKey := fmt.Sprintf("%s:%s", userKey, key)
+	userBytes, err := r.rdb.Get(ctx, redisKey).Bytes()
 	if err != nil {
 		if errors.Is(err, redis.Nil) {
 			return user, grpc_errors.ErrNotFound

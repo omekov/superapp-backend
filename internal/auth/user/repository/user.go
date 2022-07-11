@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	sessionKey            = "sessions:"
-	userKey               = "user:"
+	sessionKey            = "sessions"
+	userKey               = "user"
 	userStateEnabled      = "enabled"
 	userStateDisabled     = "disabled"
 	userStateNotActivated = "notactivated"

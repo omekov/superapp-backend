@@ -10,6 +10,7 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	proto "github.com/omekov/superapp-backend/internal/auth/delivery/grpc/v1"
 	"github.com/omekov/superapp-backend/internal/auth/domain"
+	"github.com/omekov/superapp-backend/internal/auth/interceptors"
 	"github.com/omekov/superapp-backend/internal/auth/user/service"
 	"github.com/omekov/superapp-backend/pkg/logger"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -29,6 +30,7 @@ type Server struct {
 
 // Login ...
 func (s *Server) Login(ctx context.Context, in *proto.AuthRequest) (*proto.AuthResponse, error) {
+	fmt.Println(ctx)
 	username := strings.ToLower(in.GetUsername())
 	err := validation.Validate(username,
 		validation.Required,
@@ -61,8 +63,14 @@ func (s *Server) Login(ctx context.Context, in *proto.AuthRequest) (*proto.AuthR
 }
 
 // GetMe ...
-func (s *Server) GetMe(ctx context.Context, in *proto.GetMeRequest) (*proto.GetMeResponse, error) {
-	user, err := s.Service.User.GetMe(ctx, in.GetSessionID())
+func (s *Server) GetMe(ctx context.Context, in *emptypb.Empty) (*proto.GetMeResponse, error) {
+	val := ctx.Value(interceptors.SessionIDFromClaim)
+	sessionID := val.(string)
+	if sessionID == "" {
+		return nil, errors.New("session id not found")
+	}
+
+	user, err := s.Service.User.GetMe(ctx, sessionID)
 	return &proto.GetMeResponse{
 		User: &proto.User{
 			ID:       user.ID.String(),
