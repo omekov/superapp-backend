@@ -99,9 +99,7 @@ type Migrate struct {
 }
 
 // New ...
-func New() *Config {
-	logg := logger.NewAPILogger("info")
-	logg.InitLogger()
+func New(logg *logger.APILogger) *Config {
 	return &Config{logg: logg}
 }
 

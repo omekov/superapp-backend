@@ -38,14 +38,13 @@ func Run(port, cfgPath string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	_cfg := config.New()
+	logg := logger.NewAPILogger("info")
+	logg.InitLogger()
+	_cfg := config.New(logg)
 	cfg, err := _cfg.Get(cfgPath)
 	if err != nil {
 		return err
 	}
-
-	logg := logger.NewAPILogger(cfg.Logger.Level)
-	logg.InitLogger()
 
 	connect := conn.New(logg)
 
@@ -86,11 +85,13 @@ func Run(port, cfgPath string) error {
 		grpc.UnaryInterceptor(
 			grpc_middleware.ChainUnaryServer(
 				grpc_auth.UnaryServerInterceptor(im.AuthFunc),
+				grpc.UnaryServerInterceptor(im.Logger),
 			)),
 		grpc.StreamInterceptor(grpc_middleware.ChainStreamServer(
 			grpc_ctxtags.StreamServerInterceptor(),
 			grpc_auth.StreamServerInterceptor(im.AuthFunc),
 			grpc_recovery.StreamServerInterceptor(),
+			// grpc.StreamServerInterceptor(im.Logger),
 		)),
 		grpc.ChainUnaryInterceptor(
 			grpc_ctxtags.UnaryServerInterceptor(),

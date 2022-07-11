@@ -30,7 +30,6 @@ type Server struct {
 
 // Login ...
 func (s *Server) Login(ctx context.Context, in *proto.AuthRequest) (*proto.AuthResponse, error) {
-	fmt.Println(ctx)
 	username := strings.ToLower(in.GetUsername())
 	err := validation.Validate(username,
 		validation.Required,

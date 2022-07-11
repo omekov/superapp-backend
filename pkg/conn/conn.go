@@ -62,7 +62,7 @@ func (c *Conn) RedisConn(ctx context.Context, configYamlPath string) *redis.Clie
 }
 
 func (c *Conn) redisInit(ctx context.Context, path string) (*redis.Client, error) {
-	cfg := config.New().GetRedis(path)
+	cfg := config.New(c.logg).GetRedis(path)
 	opt := redis.Options{
 		Addr:         cfg.Redis.Host,
 		MinIdleConns: 10,
@@ -80,7 +80,7 @@ func (c *Conn) redisInit(ctx context.Context, path string) (*redis.Client, error
 }
 
 func (c *Conn) sqlxInit(ctx context.Context, path string) (*sqlx.DB, error) {
-	cfg := config.New().GetPostgres(path)
+	cfg := config.New(c.logg).GetPostgres(path)
 	dsn := fmt.Sprintf(
 		"host=%s port=%s dbname=%s sslmode=%s user=%s password=%s",
 		cfg.Postgres.Host,

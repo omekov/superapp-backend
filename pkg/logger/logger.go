@@ -29,7 +29,7 @@ type Logger interface {
 // APILogger ...
 type APILogger struct {
 	level          string
-	sugarLogger    *zap.SugaredLogger
+	SugarLogger    *zap.SugaredLogger
 	serverMode     string
 	loggerEncoding string
 }
@@ -88,78 +88,78 @@ func (l *APILogger) InitLogger() {
 	core := zapcore.NewCore(encoder, logWriter, zap.NewAtomicLevelAt(logLevel))
 	logger := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
 
-	l.sugarLogger = logger.Sugar()
-	if err := l.sugarLogger.Sync(); err != nil && errors.Is(err, syscall.ENOTTY) {
-		l.sugarLogger.Error(err)
+	l.SugarLogger = logger.Sugar()
+	if err := l.SugarLogger.Sync(); err != nil && errors.Is(err, syscall.ENOTTY) {
+		l.SugarLogger.Error(err)
 	}
 }
 
 // Debug ...
 func (l *APILogger) Debug(args ...interface{}) {
-	l.sugarLogger.Debug(args...)
+	l.SugarLogger.Debug(args...)
 }
 
 // Debugf ...
 func (l *APILogger) Debugf(template string, args ...interface{}) {
-	l.sugarLogger.Debugf(template, args...)
+	l.SugarLogger.Debugf(template, args...)
 }
 
 // Info ...
 func (l *APILogger) Info(args ...interface{}) {
-	l.sugarLogger.Info(args...)
+	l.SugarLogger.Info(args...)
 }
 
 // Infof ...
 func (l *APILogger) Infof(template string, args ...interface{}) {
-	l.sugarLogger.Infof(template, args...)
+	l.SugarLogger.Infof(template, args...)
 }
 
 // Warn ...
 func (l *APILogger) Warn(args ...interface{}) {
-	l.sugarLogger.Warn(args...)
+	l.SugarLogger.Warn(args...)
 }
 
 // Warnf ...
 func (l *APILogger) Warnf(template string, args ...interface{}) {
-	l.sugarLogger.Warnf(template, args...)
+	l.SugarLogger.Warnf(template, args...)
 }
 
 // Error ...
 func (l *APILogger) Error(args ...interface{}) {
-	l.sugarLogger.Error(args...)
+	l.SugarLogger.Error(args...)
 }
 
 // Errorf ...
 func (l *APILogger) Errorf(template string, args ...interface{}) {
-	l.sugarLogger.Errorf(template, args...)
+	l.SugarLogger.Errorf(template, args...)
 }
 
 // DPanic ...
 func (l *APILogger) DPanic(args ...interface{}) {
-	l.sugarLogger.DPanic(args...)
+	l.SugarLogger.DPanic(args...)
 }
 
 // DPanicf ...
 func (l *APILogger) DPanicf(template string, args ...interface{}) {
-	l.sugarLogger.DPanicf(template, args...)
+	l.SugarLogger.DPanicf(template, args...)
 }
 
 // Panic ...
 func (l *APILogger) Panic(args ...interface{}) {
-	l.sugarLogger.Panic(args...)
+	l.SugarLogger.Panic(args...)
 }
 
 // Panicf ...
 func (l *APILogger) Panicf(template string, args ...interface{}) {
-	l.sugarLogger.Panicf(template, args...)
+	l.SugarLogger.Panicf(template, args...)
 }
 
 // Fatal ...
 func (l *APILogger) Fatal(args ...interface{}) {
-	l.sugarLogger.Fatal(args...)
+	l.SugarLogger.Fatal(args...)
 }
 
 // Fatalf ...
 func (l *APILogger) Fatalf(template string, args ...interface{}) {
-	l.sugarLogger.Fatalf(template, args...)
+	l.SugarLogger.Fatalf(template, args...)
 }

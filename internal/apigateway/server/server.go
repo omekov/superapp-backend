@@ -2,7 +2,12 @@ package server
 
 import (
 	"context"
+	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	_ "github.com/omekov/superapp-backend/doc/statik"
@@ -13,9 +18,8 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-// подключиться к auth server
-// grpc gateway
-// run http server
+// config
+// gracefull shutdown
 func Run(port, configPath string) error {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
@@ -33,56 +37,36 @@ func Run(port, configPath string) error {
 	if err != nil {
 		return err
 	}
+
 	mux := http.NewServeMux()
 	mux.Handle("/", grpcMux)
-
 	statikFS, err := fs.New()
 	if err != nil {
 		return err
 	}
+
 	swaggerHandler := http.StripPrefix("/swagger/", http.FileServer(statikFS))
 	mux.Handle("/swagger/", swaggerHandler)
 
-	return http.ListenAndServe(":4041", mux)
+	httpServer := http.Server{
+		Addr:           port,
+		Handler:        mux,
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		MaxHeaderBytes: 1 << 20,
+	}
 
-	// conn, err := grpc.Dial(, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	// if err != nil {
-	// 	return err
-	// }
+	go func() {
+		if err := httpServer.ListenAndServe(); err != nil {
+			log.Fatalf("error occurred while running http server: %s\n", err.Error())
+		}
+	}()
+	log.Println("Server started")
 
-	// client := proto.NewAuthClient(conn)
+	// Graceful Shutdown
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
 
-	// mux := http.NewServeMux()
-	// mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-	// 	if http.MethodPost == r.Method {
-	// 		type auth struct {
-	// 			Username string `json:"username"`
-	// 			Password string `json:"password"`
-	// 		}
-
-	// 		cred := auth{}
-	// 		err := json.NewDecoder(r.Body).Decode(&cred)
-	// 		if err != nil {
-	// 			log.Println(err)
-	// 		}
-
-	// 		token, err := client.Login(r.Context(), &proto.AuthRequest{
-	// 			Username: cred.Username,
-	// 			Password: cred.Password,
-	// 		})
-	// 		if err != nil {
-	// 			log.Println(err)
-	// 		}
-
-	// 		byteToken, err := json.Marshal(token)
-	// 		if err != nil {
-	// 			log.Println(err)
-	// 		}
-
-	// 		w.WriteHeader(http.StatusOK)
-	// 		w.Write(byteToken)
-	// 	}
-	// })
-	// http.ListenAndServe(":4041", mux)
-	// return nil
+	<-quit
+	return nil
 }

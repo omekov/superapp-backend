@@ -22,7 +22,7 @@ import (
 	"google.golang.org/grpc/keepalive"
 )
 
-const addr = ":4041"
+const addr = ":4042"
 
 // Run - server
 func Run() error {
@@ -34,7 +34,7 @@ func Run() error {
 	connect := conn.New(logging)
 
 	dbx := connect.SQLXConn(ctx, "../../configs/config.yaml")
-	if err := goose.Up(dbx.DB, "../../migrations/auth", goose.WithAllowMissing()); err != nil {
+	if err := goose.Up(dbx.DB, "../../migrations/salecar", goose.WithAllowMissing()); err != nil {
 		return err
 	}
 

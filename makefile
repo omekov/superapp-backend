@@ -42,7 +42,7 @@ proto-auth:
 	--grpc-gateway_out=internal/auth/delivery/grpc --grpc-gateway_opt=paths=source_relative \
 	proto/auth/v1/*.proto
 
-proto-apigateway:
+proto-api:
 	rm -f internal/apigateway/delivery/grpc/v1/*.go
 	protoc --proto_path=proto/apigateway --go_out=internal/apigateway/delivery/grpc --go_opt=paths=source_relative \
 	--go-grpc_out=internal/apigateway/delivery/grpc  --go-grpc_opt=paths=source_relative \

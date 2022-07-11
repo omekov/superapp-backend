@@ -22,5 +22,5 @@ func main() {
 
 func flagConfigPath() {
 	flag.StringVar(&configPath, "config-path", "configs/config.yaml", "Path to config files")
-	flag.StringVar(&port, "port", ":4040", "tcp port")
+	flag.StringVar(&port, "port", ":4041", "tcp port")
 }
