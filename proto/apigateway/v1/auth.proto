@@ -79,6 +79,26 @@ message ForgetPasswordRequest {
     string email = 1;
 };
 
+message CreateUserSessionLogRequest {
+    string sessionID = 1; // @gotag: validate:"is-uuid"
+    string username = 2;
+    string userAgent = 3;
+    string clientIP = 4;
+    string httpMethod = 5;
+    string httpPath = 6;
+    string httpReqBody = 7;
+}
+
+message CreateUserSessionLogResponse {
+    uint64 ID = 1;
+}
+
+message UpdateUserSessionLogRequest {
+    uint64 userSessionLogID = 1;
+    uint32 httpStatus = 2;
+    string httpResBody = 3;
+}
+
 service Auth {
     rpc Login(AuthRequest) returns (AuthResponse) {
         option (google.api.http) = {
@@ -149,6 +169,26 @@ service Auth {
         option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
 			description: "Отправляем запрос на почту пользователя на сброс пароля";
 			summary: "reset password by email";
+        };
+    };
+    rpc CreateUserSessionLog(CreateUserSessionLogRequest) returns (CreateUserSessionLogResponse)  {
+        option (google.api.http) = {
+            post: "/v1/user-session-log"
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			description: "Создаем действие пользователя";
+			summary: "create user session log";
+        };
+    };
+    rpc UpdateUserSessionLog(UpdateUserSessionLogRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            put: "/v1/user-session-log/{userSessionLogID}"
+            body: "*"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			description: "Обновляем действие пользователя";
+			summary: "update user session log";
         };
     };
 };

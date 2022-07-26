@@ -67,6 +67,8 @@ mocks-auth-user-service:
 docker:
 	make local-db 
 	make local-rdb
+	@sleep 5
+	- goose-auth
 
 local-db:
 	-docker kill superapp_postgres
@@ -89,8 +91,4 @@ lint:
 
 goose-auth:
 	goose -dir ./migrations/auth postgres "user=superapp_user password=password dbname=superapp_auth sslmode=disable port=3432" up
-	make goose-auth-directory
-
-goose-auth-directory:
-	goose -dir ./migrations/auth/directory postgres "user=superapp_user password=password dbname=superapp_auth sslmode=disable port=3432" up
 

@@ -26,6 +26,8 @@ type AuthClient interface {
 	Activate(ctx context.Context, in *ActivateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	ForgetPassword(ctx context.Context, in *ForgetPasswordRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	CreateUserSessionLog(ctx context.Context, in *CreateUserSessionLogRequest, opts ...grpc.CallOption) (*CreateUserSessionLogResponse, error)
+	UpdateUserSessionLog(ctx context.Context, in *UpdateUserSessionLogRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type authClient struct {
@@ -99,6 +101,24 @@ func (c *authClient) ForgetPassword(ctx context.Context, in *ForgetPasswordReque
 	return out, nil
 }
 
+func (c *authClient) CreateUserSessionLog(ctx context.Context, in *CreateUserSessionLogRequest, opts ...grpc.CallOption) (*CreateUserSessionLogResponse, error) {
+	out := new(CreateUserSessionLogResponse)
+	err := c.cc.Invoke(ctx, "/authservice.Auth/CreateUserSessionLog", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authClient) UpdateUserSessionLog(ctx context.Context, in *UpdateUserSessionLogRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/authservice.Auth/UpdateUserSessionLog", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServer is the server API for Auth service.
 // All implementations must embed UnimplementedAuthServer
 // for forward compatibility
@@ -110,6 +130,8 @@ type AuthServer interface {
 	Activate(context.Context, *ActivateRequest) (*emptypb.Empty, error)
 	ResetPassword(context.Context, *ResetPasswordRequest) (*emptypb.Empty, error)
 	ForgetPassword(context.Context, *ForgetPasswordRequest) (*emptypb.Empty, error)
+	CreateUserSessionLog(context.Context, *CreateUserSessionLogRequest) (*CreateUserSessionLogResponse, error)
+	UpdateUserSessionLog(context.Context, *UpdateUserSessionLogRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedAuthServer()
 }
 
@@ -137,6 +159,12 @@ func (UnimplementedAuthServer) ResetPassword(context.Context, *ResetPasswordRequ
 }
 func (UnimplementedAuthServer) ForgetPassword(context.Context, *ForgetPasswordRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ForgetPassword not implemented")
+}
+func (UnimplementedAuthServer) CreateUserSessionLog(context.Context, *CreateUserSessionLogRequest) (*CreateUserSessionLogResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateUserSessionLog not implemented")
+}
+func (UnimplementedAuthServer) UpdateUserSessionLog(context.Context, *UpdateUserSessionLogRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserSessionLog not implemented")
 }
 func (UnimplementedAuthServer) mustEmbedUnimplementedAuthServer() {}
 
@@ -277,6 +305,42 @@ func _Auth_ForgetPassword_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Auth_CreateUserSessionLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateUserSessionLogRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).CreateUserSessionLog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/authservice.Auth/CreateUserSessionLog",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).CreateUserSessionLog(ctx, req.(*CreateUserSessionLogRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Auth_UpdateUserSessionLog_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateUserSessionLogRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServer).UpdateUserSessionLog(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/authservice.Auth/UpdateUserSessionLog",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServer).UpdateUserSessionLog(ctx, req.(*UpdateUserSessionLogRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Auth_ServiceDesc is the grpc.ServiceDesc for Auth service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -311,6 +375,14 @@ var Auth_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ForgetPassword",
 			Handler:    _Auth_ForgetPassword_Handler,
+		},
+		{
+			MethodName: "CreateUserSessionLog",
+			Handler:    _Auth_CreateUserSessionLog_Handler,
+		},
+		{
+			MethodName: "UpdateUserSessionLog",
+			Handler:    _Auth_UpdateUserSessionLog_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -32,4 +32,6 @@ type Userer interface {
 	UpdatePassword(ctx context.Context, userID uuid.UUID, newPassword string) error
 	GetByEmail(ctx context.Context, email string) (User, error)
 	UpdateState(ctx context.Context, userID uuid.UUID, state, pinCode string) error
+	CreateUserSessionLog(ctx context.Context, log UserSessionLog) (uint64, error)
+	UpdateUserSessionLog(ctx context.Context, userSessionLogID uint64, log UserSessionLog) error
 }

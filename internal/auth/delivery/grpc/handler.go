@@ -193,3 +193,27 @@ func (s *Server) ForgetPassword(ctx context.Context, in *proto.ForgetPasswordReq
 	}
 	return &emptypb.Empty{}, nil
 }
+
+func (s *Server) CreateUserSessionLog(ctx context.Context, in *proto.CreateUserSessionLogRequest) (*proto.CreateUserSessionLogResponse, error) {
+	id, err := s.Service.User.CreateUserSessionLog(ctx, domain.UserSessionLog{
+		SessionID:   in.SessionID,
+		Username:    in.Username,
+		UserAgent:   in.UserAgent,
+		ClientIP:    in.ClientIP,
+		HTTPMethod:  in.HttpMethod,
+		HTTPPath:    in.HttpPath,
+		HTTPReqBody: in.HttpReqBody,
+	})
+
+	return &proto.CreateUserSessionLogResponse{
+		ID: id,
+	}, err
+}
+
+func (s *Server) UpdateUserSessionLog(ctx context.Context, in *proto.UpdateUserSessionLogRequest) (*emptypb.Empty, error) {
+	err := s.Service.User.UpdateUserSessionLog(ctx, in.UserSessionLogID, domain.UserSessionLog{
+		HTTPResBody: in.HttpResBody,
+		HTTPStatus:  in.HttpStatus,
+	})
+	return &emptypb.Empty{}, err
+}

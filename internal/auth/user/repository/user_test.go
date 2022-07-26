@@ -57,7 +57,6 @@ func TestUser_Create(t *testing.T) {
 			require.NotEmpty(t, userID)
 		})
 	}
-
 }
 
 func TestUser_GetByUsername(t *testing.T) {

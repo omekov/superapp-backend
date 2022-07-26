@@ -34,7 +34,7 @@ func New(cfg config.MailerConfig) Mailer {
 }
 
 // Send ...
-func (m Mailer) Send(to, templateFile string, data interface{}) error {
+func (m Mailer) Send(to, templateFile, subject string, data interface{}) error {
 
 	if m.config.TemplatePath == "" {
 		m.config.TemplatePath = "templates/"
@@ -54,6 +54,7 @@ func (m Mailer) Send(to, templateFile string, data interface{}) error {
 	msg := mail.NewMessage()
 	msg.SetHeader("To", to)
 	msg.SetHeader("From", m.sender)
+	msg.SetHeader("Subject", subject)
 	msg.AddAlternative("text/html", htmlBody.String())
 
 	return m.dailer.DialAndSend(msg)

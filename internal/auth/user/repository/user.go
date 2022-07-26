@@ -22,6 +22,7 @@ const (
 var (
 	ErrNotConnection = errors.New("no connection to database")
 	ErrNoRowsUpdated = errors.New("failed to update because not found")
+	ErrNoRowsCreated = errors.New("failed to create because not found")
 )
 
 type userRepo struct {

@@ -249,6 +249,90 @@
           "Auth"
         ]
       }
+    },
+    "/v1/user-session-log": {
+      "post": {
+        "summary": "create user session log",
+        "description": "Создаем действие пользователя",
+        "operationId": "Auth_CreateUserSessionLog",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/authserviceCreateUserSessionLogResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/authserviceCreateUserSessionLogRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/v1/user-session-log/{userSessionLogID}": {
+      "put": {
+        "summary": "update user session log",
+        "description": "Обновляем действие пользователя",
+        "operationId": "Auth_UpdateUserSessionLog",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "properties": {}
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userSessionLogID",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "httpStatus": {
+                  "type": "integer",
+                  "format": "int64"
+                },
+                "httpResBody": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "Auth"
+        ]
+      }
     }
   },
   "definitions": {
@@ -282,6 +366,41 @@
         },
         "refreshToken": {
           "type": "string"
+        }
+      }
+    },
+    "authserviceCreateUserSessionLogRequest": {
+      "type": "object",
+      "properties": {
+        "sessionID": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "userAgent": {
+          "type": "string"
+        },
+        "clientIP": {
+          "type": "string"
+        },
+        "httpMethod": {
+          "type": "string"
+        },
+        "httpPath": {
+          "type": "string"
+        },
+        "httpReqBody": {
+          "type": "string"
+        }
+      }
+    },
+    "authserviceCreateUserSessionLogResponse": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "string",
+          "format": "uint64"
         }
       }
     },

@@ -29,4 +29,6 @@ type UserServicier interface {
 	ForgetPassword(ctx context.Context, email string) error
 	Activate(ctx context.Context, email, pinCode string) error
 	VerifyToken(ctx context.Context, accessToken string) (string, error)
+	CreateUserSessionLog(ctx context.Context, log domain.UserSessionLog) (uint64, error)
+	UpdateUserSessionLog(ctx context.Context, id uint64, log domain.UserSessionLog) error
 }

@@ -171,3 +171,16 @@ type Session struct {
 	SessionID string    `json:"session_id"`
 	UserID    uuid.UUID `json:"user_id"`
 }
+
+type UserSessionLog struct {
+	SessionID   string    `db:"session_id"`
+	Username    string    `db:"username"`
+	UserAgent   string    `db:"user_agent"`
+	ClientIP    string    `db:"client_ip"`
+	HTTPMethod  string    `db:"http_method"`
+	HTTPPath    string    `db:"http_path"`
+	HTTPStatus  uint32    `db:"http_status"`
+	HTTPReqBody string    `db:"http_req_body"`
+	HTTPResBody string    `db:"http_res_body"`
+	ExpiresAt   time.Time `db:"expires_at"`
+}

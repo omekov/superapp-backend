@@ -143,7 +143,7 @@ func (s *UserService) Register(ctx context.Context, user domain.User) error {
 	}
 
 	pinCode := "123456"
-	if user.ID.String() == "" {
+	if user.ID == uuid.Nil {
 		user.ID = uuid.New()
 		pinCode = util.GenPinCode(6)
 	}
@@ -163,7 +163,7 @@ func (s *UserService) Register(ctx context.Context, user domain.User) error {
 	}
 
 	go func() {
-		if err := s.mailer.Send(user.Email, "activate.html", repoUser); err != nil {
+		if err := s.mailer.Send(user.Email, "activate.html", "Подтверждение регистрационных данных", repoUser); err != nil {
 			s.logg.Error(err)
 			return
 		}
@@ -216,7 +216,7 @@ func (s *UserService) ForgetPassword(ctx context.Context, email string) error {
 			Username:  user.UserName,
 		}
 
-		if err := s.mailer.Send(email, "forget_password.html", pass); err != nil {
+		if err := s.mailer.Send(email, "forget_password.html", "Сбросить пароль", pass); err != nil {
 			s.logg.Error(err)
 			return
 		}
@@ -249,7 +249,7 @@ func (s *UserService) ResetPassword(ctx context.Context, passToken, newPassword 
 	}
 
 	go func() {
-		if err := s.mailer.Send(email, "success_password.html", user); err != nil {
+		if err := s.mailer.Send(email, "success_password.html", "Пароль успешно обновлен", user); err != nil {
 			s.logg.Error(err)
 			return
 		}
@@ -280,4 +280,23 @@ func (s *UserService) Activate(ctx context.Context, email, pinCode string) error
 func (s *UserService) VerifyToken(ctx context.Context, accessToken string) (string, error) {
 	claims, err := s.jwt.GetClaimsAccess(accessToken)
 	return claims.SessionID, err
+}
+
+func (s *UserService) CreateUserSessionLog(ctx context.Context, log domain.UserSessionLog) (uint64, error) {
+	return s.userRepository.CreateUserSessionLog(ctx, repository.UserSessionLog{
+		SessionID:   log.SessionID,
+		Username:    log.Username,
+		UserAgent:   log.UserAgent,
+		ClientIP:    log.ClientIP,
+		HTTPMethod:  log.HTTPMethod,
+		HTTPPath:    log.HTTPPath,
+		HTTPReqBody: log.HTTPReqBody,
+	})
+}
+
+func (s *UserService) UpdateUserSessionLog(ctx context.Context, id uint64, log domain.UserSessionLog) error {
+	return s.userRepository.UpdateUserSessionLog(ctx, id, repository.UserSessionLog{
+		HTTPStatus:  log.HTTPStatus,
+		HTTPResBody: log.HTTPResBody,
+	})
 }

@@ -65,13 +65,15 @@ func Run(port, cfgPath string) error {
 
 	serv := service.NewService(repo, jwt, logg, mail)
 	noVerifyMethodMap := map[string]bool{
-		"/authservice.Auth/Login":          true,
-		"/authservice.Auth/Register":       true,
-		"/authservice.Auth/GetMe":          false,
-		"/authservice.Auth/Refresh":        true,
-		"/authservice.Auth/Activate":       true,
-		"/authservice.Auth/ResetPassword":  true,
-		"/authservice.Auth/ForgetPassword": true,
+		"/authservice.Auth/Login":                true,
+		"/authservice.Auth/Register":             true,
+		"/authservice.Auth/GetMe":                false,
+		"/authservice.Auth/Refresh":              true,
+		"/authservice.Auth/Activate":             true,
+		"/authservice.Auth/ResetPassword":        true,
+		"/authservice.Auth/ForgetPassword":       true,
+		"/authservice.Auth/CreateUserSessionLog": true,
+		"/authservice.Auth/UpdateUserSessionLog": true,
 	}
 	im := interceptors.NewInterceptorManager(logg, serv, noVerifyMethodMap)
 
