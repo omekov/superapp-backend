@@ -86,6 +86,27 @@ func (h homeHandler) handlerTransport(w http.ResponseWriter, r *http.Request) er
 	return nil
 }
 
+type assesstmentRequest struct {
+	Amount int `json:"amount"`
+	Volume int `json:"volume"`
+	Year   int `json:"year"`
+}
+
 func (h homeHandler) handlerAssessment(w http.ResponseWriter, r *http.Request) error {
+	ar := assesstmentRequest{}
+	err := json.NewDecoder(r.Body).Decode(&ar)
+	if err != nil {
+		return err
+	}
+	assesstment, err := h.useCase.AssessmentAuto(r.Context(), ar.Amount, ar.Volume, ar.Year)
+	if err != nil {
+		return err
+	}
+	assesstmentByte, err := json.Marshal(assesstment)
+	if err != nil {
+		return err
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(assesstmentByte)
 	return nil
 }
