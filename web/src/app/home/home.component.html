@@ -1,0 +1,143 @@
+<div class="uk-container">
+  <ul class="uk-tab" data-uk-tab="{connect:'#my-id3'}">
+    <li id="tab1"><a href="">Казахстан</a></li>
+    <li id="tab2"><a href="">Россия</a></li>
+    <li id="tab3"><a href="">Кыргызстан</a></li>
+    <li id="tab3"><a href="">Доставлено</a></li>
+  </ul>
+  <ul id="my-id3" class="uk-switcher uk-margin">
+    <li>
+      <div class="uk-margin uk-overflow-auto">
+        <table class="uk-table uk-table-striped uk-table-small uk-table-middle">
+          <thead>
+            <tr>
+              <th>Авто с гибридными установками и ДВС с базы КГД</th>
+              <th class="uk-table-expand">Расчёт и ставки</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+            <tr>
+              <td>Марка</td>
+              <td> <select name="mark" id="mark" [(ngModel)]="mark" (change)="onChangeMark($event)">
+                  <option value="" disabled selected>Все марки</option>
+                  <option *ngFor="let mark of marks" value={{mark.Name}}>{{mark.Name}}</option>
+                </select></td>
+            </tr>
+            <tr>
+              <td>Модель</td>
+              <td> <select name="model" id="model" [(ngModel)]="model" (change)="onChangeModel($event)">
+                  <option value="" disabled selected>Все модели</option>
+                  <option *ngFor="let model of models" value={{model.Name}}>{{model.Name}}</option>
+                </select></td>
+            </tr>
+            <tr>
+              <td>Объём двигателя (см3)</td>
+              <td> <select name="volume" id="volume" [(ngModel)]="volume" (change)="onChangeVolume($event)">
+                  <option value="0" disabled selected>Выбрите Объём</option>
+                  <option *ngFor="let volume of volumes" value={{volume.Value}}>{{volume.Value}}</option>
+                </select></td>
+            </tr>
+            <tr>
+              <td>Год авто</td>
+              <td> <select name="specification" id="specification" [(ngModel)]="amount"
+                  (change)="onChangeSpecification($event)">
+                  <option value="0" disabled selected>Выбирите год</option>
+                  <option *ngFor="let specification of specifications" value={{specification.Amount}}>
+                    {{specification.Year}}
+                  </option>
+                </select></td>
+            </tr>
+            <tr>
+              <td>Стоимость авто по налоговой сетке в РК, долларов США</td>
+              <td>{{amount | currency}}</td>
+            </tr>
+            <tr>
+              <td>Текущий курс доллара к тенге, 2024.09.09</td>
+              <td>{{USDToKZT | kzt }}</td>
+            </tr>
+            <tr>
+              <td>Итого в тенге</td>
+              <td><b>{{amountKZT | kzt }}</b></td>
+            </tr>
+            <tr>
+              <td><b>Статья расходов и технические данные автомобиля</b></td>
+            </tr>
+            <tr>
+              <td>Доставка до
+              </td>
+              <td><select name="city" id="city">
+                  <option value="0" disabled selected>Выберите город</option>
+                  <option value="Актау">Актау - {{2000 | currency}}</option>
+                  <option value="Алматы">Алматы {{2500 | currency}}</option>
+                  <option value="Шымкент">Шымкент - {{2600 | currency}}</option>
+                </select></td>
+            </tr>
+            <tr>
+              <td>СБКТС (Стоимость отличается в зависимости от производителя авто и города где проводится экспертиза)
+              </td>
+              <td>0 тг.</td>
+            </tr>
+            <tr>
+              <td>Таможенный сбор</td>
+              <td><span>{{customsCollection | kzt}}</span></td>
+            </tr>
+            <tr>
+              <td>Таможенная пошлина</td>
+              <td><span>{{customsDuty | kzt}}</span></td>
+            </tr>
+            <tr>
+              <td>НДС</td>
+              <td><span>{{vat | kzt}}</span></td>
+            </tr>
+            <tr>
+              <td>Кнопка SOS/ЭВАК</td>
+              <td> <select name="buttonSOS" id="buttonSOS">
+                  <option value="0" disabled selected>Выберите стоимость</option>
+                  <option value="200000">{{200000 | kzt}}</option>
+                  <option value="210000">{{210000 | kzt}}</option>
+                  <option value="220000">{{220000 | kzt}}</option>
+                  <option value="230000">{{230000 | kzt}}</option>
+                  <option value="240000">{{240000 | kzt}}</option>
+                  <option value="250000">{{250000 | kzt}}</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Услуги Брокера, портовые сборы, прочие услуги - ориентировочно</td>
+              <td>
+                <select name="brokerAmount" id="brokerAmount">
+                  <option value="0" disabled selected>Выберите стоимость</option>
+                  <option value="20000">{{20000 | kzt}}</option>
+                  <option value="25000">{{25000 | kzt}}</option>
+                  <option value="30000">{{30000 | kzt}}</option>
+                  <option value="35000">{{35000 | kzt}}</option>
+                  <option value="40000">{{40000 | kzt}}</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td><b>Поставить учет РК</b></td>
+            </tr>
+            <tr>
+              <td>Первичная регистрация</td>
+              <td>1846000 тг.</td>
+            </tr>
+            <tr>
+              <td>Утилизационный сбор</td>
+              <td>923000 тг.</td>
+            </tr>
+            <tr style="font-size: 16px;">
+              <td><b>Итого под ключ в Казахстане</b></td>
+              <td><b>10753797.444 тг.</b></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </li>
+    <li>coming soon</li>
+    <li>coming soon</li>
+    <li>coming soon</li>
+  </ul>
+
+</div>
